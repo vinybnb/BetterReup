@@ -93,12 +93,13 @@ namespace BetterReup.Helpers
                 driver = new ChromeDriver(options);
                 driver.Navigate().GoToUrl("https://www.youtube.com/upload");
                 Thread.Sleep(config.Page_Load);
-                //var uploadButton = driver.FindElementsById("start-upload-button-single").First(x => x.Displayed);
                 var uploadButton = driver.FindElement(By.XPath("//*/div[@id='upload-prompt-box']/div[2]"));
                 uploadButton.Click();
                 Thread.Sleep(config.Dialog_Load);
-                System.Windows.Forms.SendKeys.SendWait(config.Video_Path + $"{video.Id}_cut.mp4");
-                System.Windows.Forms.SendKeys.SendWait("{Enter}");
+                var videoPath = $@"{config.Video_Path}{video.Id}_cut.mp4";
+                System.Windows.Forms.Clipboard.SetText(videoPath);
+                System.Windows.Forms.SendKeys.SendWait(@"^{v}");
+                System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
                 Thread.Sleep(config.Page_Load);
 
                 var titleInput = driver.FindElement(By.XPath("//*/input[@class='yt-uix-form-input-text video-settings-title']"));
@@ -108,7 +109,7 @@ namespace BetterReup.Helpers
 
                 var descriptionInput = driver.FindElement(By.XPath("//*/textarea[@class='yt-uix-form-input-textarea video-settings-description']"));
                 System.Windows.Forms.Clipboard.SetText(video.Description);
-                descriptionInput.SendKeys(OpenQA.Selenium.Keys.Control + "v");
+                descriptionInput.SendKeys(Keys.Control + "v");
 
                 var tagInput = driver.FindElement(By.XPath("//*/input[@class='video-settings-add-tag']"));
                 foreach (var tag in video.Keywords)
@@ -118,9 +119,29 @@ namespace BetterReup.Helpers
                     tagInput.SendKeys(Keys.Enter);
                 }
 
+                do
+                {
+                    var processingPercentageTexts = driver.FindElements(By.XPath("//*/div[@class='progress-bar-processing']/span[@class='progress-bar-text']/span[@class='progress-bar-percentage']")).Where(x => x.Displayed);
+                    if (processingPercentageTexts.Count() > 0 && processingPercentageTexts.First().Text != "0%") break;
+                    Thread.Sleep(config.Upload_Check_Interval);
+                }
+                while (true);
+
                 var completeButton = driver.FindElement(By.XPath("//*/button[@class='yt-uix-button yt-uix-button-size-default save-changes-button yt-uix-tooltip yt-uix-button-primary']/span[@class='yt-uix-button-content']"));
                 completeButton.Click();
                 Thread.Sleep(config.Page_Load);
+
+                var videoFile = @"Videos\" + video.Id + ".mp4";
+                var videoCutFile = @"Videos\" + video.Id + "_cut.mp4";
+                if (File.Exists(videoFile))
+                {
+                    File.Delete(videoFile);
+                }
+
+                if (File.Exists(videoCutFile))
+                {
+                    File.Delete(videoCutFile);
+                }
 
                 status = true;
             }
