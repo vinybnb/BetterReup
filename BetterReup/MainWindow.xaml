@@ -28,9 +28,9 @@
         <Label x:Name="lblDownloaded" Content="..." Grid.Column="1" HorizontalAlignment="Left" Margin="0,70,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="707"/>
         <Label x:Name="lblUploading" Content="..." Grid.Column="1" HorizontalAlignment="Left" Margin="0,100,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="707"/>
         <Label x:Name="lblUploaded" Content="..." Grid.Column="1" HorizontalAlignment="Left" Margin="0,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="707"/>
-        <Label Content="Tổng số video download lỗi:" Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
-        <Label x:Name="lblErrorDownloads" Content="0" Grid.Column="1" HorizontalAlignment="Left" Margin="170,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
-        <Label Content="Tổng số video upload lỗi:" Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,160,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
-        <Label x:Name="lblErrorUploads" Content="0" Grid.Column="1" HorizontalAlignment="Left" Margin="170,160,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
+        <Label Content="Tổng số video download lỗi:" Grid.Column="1" HorizontalAlignment="Left" Margin="0,160,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
+        <Label x:Name="lblErrorDownloads" Content="0" Grid.Column="1" HorizontalAlignment="Left" Margin="170,160,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
+        <Label Content="Tổng số video upload lỗi:" Grid.Column="1" HorizontalAlignment="Left" Margin="0,190,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
+        <Label x:Name="lblErrorUploads" Content="0" Grid.Column="1" HorizontalAlignment="Left" Margin="170,190,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
     </Grid>
 </Window>
