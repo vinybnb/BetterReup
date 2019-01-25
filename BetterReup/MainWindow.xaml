@@ -1,0 +1,36 @@
+﻿<Window x:Class="BetterReup.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BetterReup"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Title="Better Reup 0965.999.290 - 0976.931.999"
+        Height="450"
+        Width="800"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" 
+        TextOptions.TextRenderingMode="Auto"        
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}">
+    <Grid Margin="0,0,-6.667,-5.333">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="67*"/>
+            <ColumnDefinition Width="140*"/>
+            <ColumnDefinition Width="594*"/>
+        </Grid.ColumnDefinitions>
+        <Label x:Name="lblTotalVideos" Content="..." HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.158,0.184" Grid.Column="1" Grid.ColumnSpan="2" Width="707"/>
+        <Label x:Name="lblDownloading" Content="..." HorizontalAlignment="Left" Margin="0,40,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.ColumnSpan="2" Width="707"/>
+        <Label x:Name="lblDownloaded" Content="..." Grid.Column="1" HorizontalAlignment="Left" Margin="0,70,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="707"/>
+        <Label x:Name="lblUploading" Content="..." Grid.Column="1" HorizontalAlignment="Left" Margin="0,100,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="707"/>
+        <Label x:Name="lblUploaded" Content="..." Grid.Column="1" HorizontalAlignment="Left" Margin="0,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="707"/>
+        <Label Content="Tổng số video download lỗi:" Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
+        <Label x:Name="lblErrorDownloads" Content="0" Grid.Column="1" HorizontalAlignment="Left" Margin="170,130,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
+        <Label Content="Tổng số video upload lỗi:" Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,160,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
+        <Label x:Name="lblErrorUploads" Content="0" Grid.Column="1" HorizontalAlignment="Left" Margin="170,160,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
+    </Grid>
+</Window>
