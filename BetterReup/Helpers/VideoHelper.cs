@@ -18,11 +18,11 @@ namespace BetterReup.Helpers
     {
         protected YoutubeConverter Converter { get; set; }
         public static readonly Configs config = JsonConvert.DeserializeObject<Configs>(File.ReadAllText("Configs.json"));
+        public static readonly string[] titles = File.ReadAllLines("Titles.txt").Where(title => title.Trim() != string.Empty).ToArray();
 
         public VideoHelper()
         {
             Converter = new YoutubeConverter();
-
         }
 
         public async Task<bool> DownloadVideo(Video video)
@@ -30,6 +30,12 @@ namespace BetterReup.Helpers
             try
             {
                 await Converter.DownloadVideoAsync(video.Id, $@"Videos\{video.Id}.mp4");
+                var thumbnailUri = new Uri(video.Thumbnails.HighResUrl);
+                using (System.Net.WebClient client = new System.Net.WebClient())
+                {
+                    var thumbPath = config.Video_Path + video.Id + ".jpg";
+                    client.DownloadFile(thumbnailUri, thumbPath);
+                }
 
                 return true;
             }
@@ -73,7 +79,7 @@ namespace BetterReup.Helpers
             }
         }
 
-        public bool UploadVideo(Video video)
+        public bool UploadVideo(Video video, string title)
         {
             ChromeDriver driver = null;
             var status = false;
@@ -104,7 +110,7 @@ namespace BetterReup.Helpers
 
                 var titleInput = driver.FindElement(By.XPath("//*/input[@class='yt-uix-form-input-text video-settings-title']"));
                 titleInput.SendKeys(Keys.Control + "a");
-                System.Windows.Forms.Clipboard.SetText(video.Title + " #1");
+                System.Windows.Forms.Clipboard.SetText(title);
                 titleInput.SendKeys(Keys.Control + "v");
 
                 var descriptionInput = driver.FindElement(By.XPath("//*/textarea[@class='yt-uix-form-input-textarea video-settings-description']"));
@@ -118,6 +124,15 @@ namespace BetterReup.Helpers
                     tagInput.SendKeys(Keys.Control + "v");
                     tagInput.SendKeys(Keys.Enter);
                 }
+
+                var thumbnailButton = driver.FindElement(By.XPath("//*/span[@class='custom-thumb-selectable']/div[@class='custom-thumb-area horizontal-custom-thumb-area small-thumb-dimensions']/div[@class='custom-thumb-container']"));
+                thumbnailButton.Click();
+                Thread.Sleep(config.Dialog_Load);
+                var thumbnailPath = $@"{config.Video_Path}{video.Id}.jpg";
+                System.Windows.Forms.Clipboard.SetText(thumbnailPath);
+                System.Windows.Forms.SendKeys.SendWait(@"^{v}");
+                System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
+                Thread.Sleep(config.Page_Load);
 
                 do
                 {
@@ -133,6 +148,7 @@ namespace BetterReup.Helpers
 
                 var videoFile = @"Videos\" + video.Id + ".mp4";
                 var videoCutFile = @"Videos\" + video.Id + "_cut.mp4";
+                var thumbnailFile = @"Videos\" + video.Id + ".jpg";
                 if (File.Exists(videoFile))
                 {
                     File.Delete(videoFile);
@@ -141,6 +157,11 @@ namespace BetterReup.Helpers
                 if (File.Exists(videoCutFile))
                 {
                     File.Delete(videoCutFile);
+                }
+
+                if (File.Exists(thumbnailFile))
+                {
+                    File.Delete(thumbnailFile);
                 }
 
                 status = true;
