@@ -36,5 +36,6 @@
         <Label x:Name="lblNumDownloads" Content="0" Grid.Column="1" HorizontalAlignment="Left" Margin="170,220,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
         <Label Content="Tổng số video đã upload:" Grid.Column="1" HorizontalAlignment="Left" Margin="0,250,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
         <Label x:Name="lblNumUploads" Content="0" Grid.Column="1" HorizontalAlignment="Left" Margin="170,250,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
+        <Label x:Name="lblDone" Content="" Grid.Column="1" HorizontalAlignment="Left" Margin="0,280,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
     </Grid>
 </Window>

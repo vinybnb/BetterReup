@@ -43,7 +43,7 @@ namespace BetterReup.Helpers
             {
                 using (StreamWriter writer = new StreamWriter("Errors.txt", true))
                 {
-                    writer.WriteLine(ex.Message);
+                    writer.WriteLine(ex.ToString());
                 }
             }
 
@@ -74,15 +74,15 @@ namespace BetterReup.Helpers
             {
                 using (StreamWriter writer = new StreamWriter("Errors.txt", true))
                 {
-                    writer.WriteLine(ex.Message);
+                    writer.WriteLine(ex.ToString());
                 }
             }
         }
 
-        public bool UploadVideo(Video video, string title)
+        public int UploadVideos(Video[] videos, int[] indexes)
         {
             ChromeDriver driver = null;
-            var status = false;
+            var numSuccess = 0;
             try
             {
                 string profile_path = Path.GetDirectoryName(config.Profile);
@@ -97,14 +97,54 @@ namespace BetterReup.Helpers
                     options.AddArguments("--headless");
                 }
                 driver = new ChromeDriver(options);
+
+                for (var i = 0; i < videos.Length; i++)
+                {
+                    driver.ExecuteScript("window.open('', 'tab_" + i + "');");
+                    driver.SwitchTo().Window("tab_" + i);
+                    var title = VideoHelper.config.Custom_Title == 1 ? VideoHelper.titles[indexes[i]] : videos[i].Title;
+                    UploadVideo(driver, videos[i], title);
+                }
+
+                for (var i = 0; i < videos.Length; i++)
+                {
+                    driver.SwitchTo().Window("tab_" + i);
+                    var status = CompleteUploadVideo(driver, videos[i]);
+                    if (status) numSuccess++;
+                }
+
+                Thread.Sleep(config.Page_Load);
+            }
+            catch (Exception ex)
+            {
+                using (StreamWriter writer = new StreamWriter("Errors.txt", true))
+                {
+                    writer.WriteLine(ex.ToString());
+                }
+            }
+
+            if (driver != null)
+            {
+                driver.Close();
+                driver.Quit();
+            }
+
+            return numSuccess;
+        }
+
+        public void UploadVideo(ChromeDriver driver, Video video, string title)
+        {
+            try
+            {
                 driver.Navigate().GoToUrl("https://www.youtube.com/upload");
                 Thread.Sleep(config.Page_Load);
                 var uploadButton = driver.FindElement(By.XPath("//*/div[@id='upload-prompt-box']/div[2]"));
                 uploadButton.Click();
                 Thread.Sleep(config.Dialog_Load);
                 var videoPath = $@"{config.Video_Path}{video.Id}_cut.mp4";
-                System.Windows.Forms.Clipboard.SetText(videoPath);
-                System.Windows.Forms.SendKeys.SendWait(@"^{v}");
+                //System.Windows.Forms.Clipboard.SetText(videoPath);
+                //System.Windows.Forms.SendKeys.SendWait(@"^{v}");
+                System.Windows.Forms.SendKeys.SendWait(videoPath);
                 System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
                 Thread.Sleep(config.Page_Load);
 
@@ -124,16 +164,21 @@ namespace BetterReup.Helpers
                     tagInput.SendKeys(Keys.Control + "v");
                     tagInput.SendKeys(Keys.Enter);
                 }
+            }
+            catch (Exception ex)
+            {
+                using (StreamWriter writer = new StreamWriter("Errors.txt", true))
+                {
+                    writer.WriteLine(ex.ToString());
+                }
+            }
+        }
 
-                var thumbnailButton = driver.FindElement(By.XPath("//*/span[@class='custom-thumb-selectable']/div[@class='custom-thumb-area horizontal-custom-thumb-area small-thumb-dimensions']/div[@class='custom-thumb-container']"));
-                thumbnailButton.Click();
-                Thread.Sleep(config.Dialog_Load);
-                var thumbnailPath = $@"{config.Video_Path}{video.Id}.jpg";
-                System.Windows.Forms.Clipboard.SetText(thumbnailPath);
-                System.Windows.Forms.SendKeys.SendWait(@"^{v}");
-                System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
-                Thread.Sleep(config.Page_Load);
-
+        public bool CompleteUploadVideo(ChromeDriver driver, Video video)
+        {
+            var status = false;
+            try
+            {
                 do
                 {
                     var processingPercentageTexts = driver.FindElements(By.XPath("//*/div[@class='progress-bar-processing']/span[@class='progress-bar-text']/span[@class='progress-bar-percentage']")).Where(x => x.Displayed);
@@ -142,7 +187,21 @@ namespace BetterReup.Helpers
                 }
                 while (true);
 
-                var completeButton = driver.FindElement(By.XPath("//*/button[@class='yt-uix-button yt-uix-button-size-default save-changes-button yt-uix-tooltip yt-uix-button-primary']/span[@class='yt-uix-button-content']"));
+                try
+                {
+                    var thumbnailButton = driver.FindElement(By.XPath("//*/span[@class='custom-thumb-selectable']/div[@class='custom-thumb-area horizontal-custom-thumb-area small-thumb-dimensions']/div[@class='custom-thumb-container']"));
+                    thumbnailButton.Click();
+                    Thread.Sleep(config.Dialog_Load);
+                    var thumbnailPath = $@"{config.Video_Path}{video.Id}.jpg";
+                    //System.Windows.Forms.Clipboard.SetText(thumbnailPath);
+                    //System.Windows.Forms.SendKeys.SendWait(@"^v");
+                    System.Windows.Forms.SendKeys.SendWait(thumbnailPath);
+                    System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
+                    Thread.Sleep(config.Page_Load);
+                }
+                catch (Exception) { }
+
+                var completeButton = driver.FindElement(By.XPath("//*/button[@class='yt-uix-button yt-uix-button-size-default save-changes-button yt-uix-tooltip yt-uix-button-primary']"));
                 completeButton.Click();
                 Thread.Sleep(config.Page_Load);
 
@@ -163,24 +222,122 @@ namespace BetterReup.Helpers
                 {
                     File.Delete(thumbnailFile);
                 }
-
                 status = true;
             }
             catch (Exception ex)
             {
                 using (StreamWriter writer = new StreamWriter("Errors.txt", true))
                 {
-                    writer.WriteLine(ex.Message);
+                    writer.WriteLine(ex.ToString());
                 }
-            }
-
-            if (driver != null)
-            {
-                driver.Close();
-                driver.Quit();
             }
 
             return status;
         }
+
+
+        //public bool UploadVideo(Video video, string title)
+        //{
+        //    ChromeDriver driver = null;
+        //    var status = false;
+        //    try
+        //    {
+        //        string profile_path = Path.GetDirectoryName(config.Profile);
+        //        string profile_name = Path.GetFileName(config.Profile);
+        //        ChromeOptions options = new ChromeOptions();
+        //        options.AddArguments("--user-data-dir=" + profile_path);
+        //        options.AddArguments("--profile-directory=" + profile_name);
+        //        options.AddArguments("start-maximized");
+        //        options.AddArguments("disable-infobars");
+        //        if (config.Mode == 0)
+        //        {
+        //            options.AddArguments("--headless");
+        //        }
+        //        driver = new ChromeDriver(options);
+        //        driver.Navigate().GoToUrl("https://www.youtube.com/upload");
+        //        Thread.Sleep(config.Page_Load);
+        //        var uploadButton = driver.FindElement(By.XPath("//*/div[@id='upload-prompt-box']/div[2]"));
+        //        uploadButton.Click();
+        //        Thread.Sleep(config.Dialog_Load);
+        //        var videoPath = $@"{config.Video_Path}{video.Id}_cut.mp4";
+        //        System.Windows.Forms.Clipboard.SetText(videoPath);
+        //        System.Windows.Forms.SendKeys.SendWait(@"^{v}");
+        //        System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
+        //        Thread.Sleep(config.Page_Load);
+
+        //        var titleInput = driver.FindElement(By.XPath("//*/input[@class='yt-uix-form-input-text video-settings-title']"));
+        //        titleInput.SendKeys(Keys.Control + "a");
+        //        System.Windows.Forms.Clipboard.SetText(title);
+        //        titleInput.SendKeys(Keys.Control + "v");
+
+        //        var descriptionInput = driver.FindElement(By.XPath("//*/textarea[@class='yt-uix-form-input-textarea video-settings-description']"));
+        //        System.Windows.Forms.Clipboard.SetText(video.Description);
+        //        descriptionInput.SendKeys(Keys.Control + "v");
+
+        //        var tagInput = driver.FindElement(By.XPath("//*/input[@class='video-settings-add-tag']"));
+        //        foreach (var tag in video.Keywords)
+        //        {
+        //            System.Windows.Forms.Clipboard.SetText(tag);
+        //            tagInput.SendKeys(Keys.Control + "v");
+        //            tagInput.SendKeys(Keys.Enter);
+        //        }
+
+        //        var thumbnailButton = driver.FindElement(By.XPath("//*/span[@class='custom-thumb-selectable']/div[@class='custom-thumb-area horizontal-custom-thumb-area small-thumb-dimensions']/div[@class='custom-thumb-container']"));
+        //        thumbnailButton.Click();
+        //        Thread.Sleep(config.Dialog_Load);
+        //        var thumbnailPath = $@"{config.Video_Path}{video.Id}.jpg";
+        //        System.Windows.Forms.Clipboard.SetText(thumbnailPath);
+        //        System.Windows.Forms.SendKeys.SendWait(@"^{v}");
+        //        System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
+        //        Thread.Sleep(config.Page_Load);
+
+        //        do
+        //        {
+        //            var processingPercentageTexts = driver.FindElements(By.XPath("//*/div[@class='progress-bar-processing']/span[@class='progress-bar-text']/span[@class='progress-bar-percentage']")).Where(x => x.Displayed);
+        //            if (processingPercentageTexts.Count() > 0 && processingPercentageTexts.First().Text != "0%") break;
+        //            Thread.Sleep(config.Upload_Check_Interval);
+        //        }
+        //        while (true);
+
+        //        var completeButton = driver.FindElement(By.XPath("//*/button[@class='yt-uix-button yt-uix-button-size-default save-changes-button yt-uix-tooltip yt-uix-button-primary']"));
+        //        completeButton.Click();
+        //        Thread.Sleep(config.Page_Load);
+
+        //        var videoFile = @"Videos\" + video.Id + ".mp4";
+        //        var videoCutFile = @"Videos\" + video.Id + "_cut.mp4";
+        //        var thumbnailFile = @"Videos\" + video.Id + ".jpg";
+        //        //if (File.Exists(videoFile))
+        //        //{
+        //        //    File.Delete(videoFile);
+        //        //}
+
+        //        //if (File.Exists(videoCutFile))
+        //        //{
+        //        //    File.Delete(videoCutFile);
+        //        //}
+
+        //        //if (File.Exists(thumbnailFile))
+        //        //{
+        //        //    File.Delete(thumbnailFile);
+        //        //}
+
+        //        status = true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        using (StreamWriter writer = new StreamWriter("Errors.txt", true))
+        //        {
+        //            writer.WriteLine(ex.ToString());
+        //        }
+        //    }
+
+        //    if (driver != null)
+        //    {
+        //        driver.Close();
+        //        driver.Quit();
+        //    }
+
+        //    return status;
+        //}
     }
 }
