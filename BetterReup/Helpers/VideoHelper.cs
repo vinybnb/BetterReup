@@ -201,8 +201,13 @@ namespace BetterReup.Helpers
                 }
                 catch (Exception) { }
 
-                var completeButton = driver.FindElement(By.XPath("//*/button[@class='yt-uix-button yt-uix-button-size-default save-changes-button yt-uix-tooltip yt-uix-button-primary']"));
-                completeButton.Click();
+                try
+                {
+                    var completeButton = driver.FindElement(By.XPath("//*/button[@class='yt-uix-button yt-uix-button-size-default save-changes-button yt-uix-tooltip yt-uix-button-primary']"));
+                    completeButton.Click();
+                }
+                catch (Exception) { }
+
                 Thread.Sleep(config.Page_Load);
 
                 var videoFile = @"Videos\" + video.Id + ".mp4";
