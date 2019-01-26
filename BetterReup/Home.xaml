@@ -1,0 +1,15 @@
+﻿<Window x:Class="BetterReup.Home"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BetterReup"
+        WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d"
+        Title="BetterReup" Height="450" Width="800">
+    <Grid>
+        <Button x:Name="btnReup" Content="Reup" HorizontalAlignment="Left" Margin="206,60,0,0" VerticalAlignment="Top" Width="382" Background="#FF177E2A" Click="BtnReup_Click"/>
+        <Button x:Name="btnAds" Content="Chèn quảng cáo" HorizontalAlignment="Left" Margin="206,106,0,0" VerticalAlignment="Top" Width="382" Background="#FFEA4325" Click="BtnAds_Click"/>
+
+    </Grid>
+</Window>

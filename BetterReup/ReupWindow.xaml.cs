@@ -14,40 +14,20 @@ namespace BetterReup
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class ReupWindow : Window
     {
-        public MainWindow()
+        public ReupWindow()
         {
             InitializeComponent();
-
-            StartProgram();
         }
 
-        static bool IsProgramExpired()
+        private void BtnStart_Click(object sender, RoutedEventArgs e)
         {
-            var status = true;
-            try
-            {
-                var myHttpWebRequest = (HttpWebRequest)WebRequest.Create("http://www.microsoft.com");
-                var response = myHttpWebRequest.GetResponse();
-                string todaysDates = response.Headers["date"];
-
-                var expiredTime = new DateTime(2019, 2, 26);
-                var currentTime = DateTime.ParseExact(todaysDates,
-                                       "ddd, dd MMM yyyy HH:mm:ss 'GMT'",
-                                       CultureInfo.InvariantCulture.DateTimeFormat,
-                                       DateTimeStyles.AssumeUniversal);
-                if (DateTime.Compare(currentTime, expiredTime) < 0) status = false;
-            }
-            catch (Exception) { }
-
-            return status;
+            StartProgram();
         }
 
         public async void StartProgram()
         {
-            if (IsProgramExpired()) return;
-
             var helper = new VideoHelper();
             var videos = await helper.GetChannelUploadsAsync(VideoHelper.config.Channel_Id);
             lblTotalVideos.Content = $"Tổng số video: {videos.Count.ToString()}. Sẽ download từ video thứ {VideoHelper.config.Start} đến {VideoHelper.config.Start + VideoHelper.config.Num_Videos - 1}";
@@ -118,6 +98,13 @@ namespace BetterReup
             }
 
             lblDone.Content = "Hoàn thành!";
+        }
+
+        private void BtnHome_Click(object sender, RoutedEventArgs e)
+        {
+            var home = new Home();
+            home.Show();
+            this.Close();
         }
     }
 }
