@@ -4,11 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BetterReup"
+        WindowStartupLocation="CenterScreen"
         mc:Ignorable="d"
         Title="Chèn quảng cáo" Height="450" Width="800">
     <Grid>
         <Button x:Name="btnStart" Content="Bắt đầu" HorizontalAlignment="Left" Margin="292,10,0,0" VerticalAlignment="Top" Width="187" Background="#FFE84F33" Click="BtnStart_Click"/>
         <Button x:Name="btnHome" Content="Trang chủ" HorizontalAlignment="Left" Margin="651,10,0,0" VerticalAlignment="Top" Width="113" Click="BtnHome_Click" Background="#FF429D29"/>
-
+        <Label x:Name="lblNumSuccess" Content="" HorizontalAlignment="Left" Margin="90,112,0,0" VerticalAlignment="Top" Width="301"/>
+        <Label x:Name="lblStartStatus" Content="" HorizontalAlignment="Left" Margin="90,81,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>

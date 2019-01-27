@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BetterReup.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,7 +27,16 @@ namespace BetterReup
 
         private void BtnStart_Click(object sender, RoutedEventArgs e)
         {
+            lblStartStatus.Content = "Đang chạy...";
+            StartProgram();
+        }
 
+        public void StartProgram()
+        {
+            var adsHelper = new AdsHelper();
+            var numSuccess = adsHelper.InsertAds();
+            lblStartStatus.Content = "Hoàn thành!";
+            lblNumSuccess.Content = "Số video được chèn quảng cáo thành công: " + numSuccess;
         }
 
         private void BtnHome_Click(object sender, RoutedEventArgs e)
