@@ -10,6 +10,7 @@
     <Grid>
         <Button x:Name="btnReup" Content="Reup" HorizontalAlignment="Left" Margin="206,60,0,0" VerticalAlignment="Top" Width="382" Background="#FF177E2A" Click="BtnReup_Click"/>
         <Button x:Name="btnAds" Content="Chèn quảng cáo" HorizontalAlignment="Left" Margin="206,106,0,0" VerticalAlignment="Top" Width="382" Background="#FFEA4325" Click="BtnAds_Click"/>
+        <Button x:Name="btnPublicPrivateVideos" Content="Công khai/Riêng tư Video" HorizontalAlignment="Left" Margin="206,152,0,0" VerticalAlignment="Top" Width="382" Background="#FF2531EA" Click="btnPublicPrivateVideos_Click"/>
 
     </Grid>
 </Window>

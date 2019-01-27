@@ -1,0 +1,16 @@
+﻿<Window x:Class="BetterReup.PublicPrivateVideosWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BetterReup"
+        WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d"
+        Title="Công khai/Riêng tư Video" Height="450" Width="800">
+    <Grid>
+        <Button x:Name="btnPublicVideos" Content="Bắt đầu công khai video" HorizontalAlignment="Left" Margin="71,31,0,0" VerticalAlignment="Top" Width="239" RenderTransformOrigin="0.453,-0.48" Background="#FF2995E5" Click="BtnPublicVideos_Click"/>
+        <Button x:Name="btnPrivateVideos" Content="Bắt đầu riêng tư video" HorizontalAlignment="Left" Margin="71,91,0,0" VerticalAlignment="Top" Width="239" RenderTransformOrigin="0.453,-0.48" Click="BtnPrivateVideos_Click"/>
+        <Button x:Name="btnHome" Content="Trang chủ" HorizontalAlignment="Left" Margin="664,31,0,0" VerticalAlignment="Top" Width="96" Background="#FF1F9D32" Click="BtnHome_Click"/>
+
+    </Grid>
+</Window>

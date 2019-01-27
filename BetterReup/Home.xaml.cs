@@ -62,5 +62,12 @@ namespace BetterReup
             adsWindow.Show();
             this.Close();
         }
+
+        private void btnPublicPrivateVideos_Click(object sender, RoutedEventArgs e)
+        {
+            var publicPrivateVideosWindow = new PublicPrivateVideosWindow();
+            publicPrivateVideosWindow.Show();
+            this.Close();
+        }
     }
 }
