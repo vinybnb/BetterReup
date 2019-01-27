@@ -59,10 +59,9 @@ namespace BetterReup.Helpers
                         {
                             driver.ExecuteScript("window.open('', 'tab_" + k + "');");
                             driver.SwitchTo().Window("tab_" + k);
-                            //driver.Navigate().GoToUrl(chunk[k]);
-                            //Thread.Sleep(config.Page_Load);
-                            var status = true;
-                            //var status = SetAdsTimes(driver);
+                            driver.Navigate().GoToUrl(chunk[k]);
+                            Thread.Sleep(config.Page_Load);
+                            var status = SetAdsTimes(driver);
                             if (status) numSuccess++;
                         }
                         Thread.Sleep(config.Page_Load);
