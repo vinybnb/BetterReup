@@ -138,26 +138,24 @@ namespace BetterReup.Helpers
             {
                 driver.Navigate().GoToUrl("https://www.youtube.com/upload");
                 Thread.Sleep(config.Page_Load);
-                var uploadButton = driver.FindElement(By.XPath("//*/div[@id='upload-prompt-box']/div[2]"));
+                var uploadButton = driver.FindElement(By.XPath("//*/div[@class='upload-widget yt-card branded-page-box-padding']/div[@id='upload-prompt-box']"));
                 uploadButton.Click();
                 Thread.Sleep(config.Dialog_Load);
                 var videoPath = $@"{config.Video_Path}{video.Id}_cut.mp4";
-                //System.Windows.Forms.Clipboard.SetText(videoPath);
-                //System.Windows.Forms.SendKeys.SendWait(@"^{v}");
                 System.Windows.Forms.SendKeys.SendWait(videoPath);
                 System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
                 Thread.Sleep(config.Page_Load);
 
-                var titleInput = driver.FindElement(By.XPath("//*/input[@class='yt-uix-form-input-text video-settings-title']"));
+                var titleInput = driver.FindElement(By.XPath("//*/div/label[@class='basic-info-form-input'][1]/span[@class='yt-uix-form-input-container yt-uix-form-input-text-container yt-uix-form-input-non-empty']/input"));
                 titleInput.SendKeys(Keys.Control + "a");
                 System.Windows.Forms.Clipboard.SetText(title);
                 titleInput.SendKeys(Keys.Control + "v");
 
-                var descriptionInput = driver.FindElement(By.XPath("//*/textarea[@class='yt-uix-form-input-textarea video-settings-description']"));
+                var descriptionInput = driver.FindElement(By.XPath("//*/div/label[@class='basic-info-form-input'][2]/span[@class='yt-uix-form-input-container yt-uix-form-input-textarea-container ']/textarea"));
                 System.Windows.Forms.Clipboard.SetText(video.Description);
                 descriptionInput.SendKeys(Keys.Control + "v");
 
-                var tagInput = driver.FindElement(By.XPath("//*/input[@class='video-settings-add-tag']"));
+                var tagInput = driver.FindElement(By.XPath("//*/div/div[@class='basic-info-form-input']/span[@class='yt-uix-form-input-container yt-uix-form-input-textarea-container']/div[@class='video-settings-tag-chips-container yt-uix-form-input-textarea']/span[@class='yt-uix-form-input-placeholder-container']/input"));
                 foreach (var tag in video.Keywords)
                 {
                     System.Windows.Forms.Clipboard.SetText(tag);
@@ -181,7 +179,7 @@ namespace BetterReup.Helpers
             {
                 do
                 {
-                    var processingPercentageTexts = driver.FindElements(By.XPath("//*/div[@class='progress-bar-processing']/span[@class='progress-bar-text']/span[@class='progress-bar-percentage']")).Where(x => x.Displayed);
+                    var processingPercentageTexts = driver.FindElements(By.XPath("//*/div[@class='upload-state-bar']/div[@class='progress-bars']/div[@class='inner-progress-bars']/div[@class='progress-bar-processing']/span[@class='progress-bar-text']/span")).Where(x => x.Displayed);
                     if (processingPercentageTexts.Count() > 0 && processingPercentageTexts.First().Text != "0%") break;
                     Thread.Sleep(config.Upload_Check_Interval);
                 }
@@ -193,21 +191,14 @@ namespace BetterReup.Helpers
                     thumbnailButton.Click();
                     Thread.Sleep(config.Dialog_Load);
                     var thumbnailPath = $@"{config.Video_Path}{video.Id}.jpg";
-                    //System.Windows.Forms.Clipboard.SetText(thumbnailPath);
-                    //System.Windows.Forms.SendKeys.SendWait(@"^v");
                     System.Windows.Forms.SendKeys.SendWait(thumbnailPath);
                     System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
                     Thread.Sleep(config.Page_Load);
                 }
                 catch (Exception) { }
 
-                try
-                {
-                    var completeButton = driver.FindElement(By.XPath("//*/button[@class='yt-uix-button yt-uix-button-size-default save-changes-button yt-uix-tooltip yt-uix-button-primary']"));
-                    completeButton.Click();
-                }
-                catch (Exception) { }
-
+                var completeButton = driver.FindElement(By.XPath("//*/div[@id='active-uploads-contain']/div[@id='upload-item-0']/div[@class='upload-item-main']/div[@class='upload-state-bar']/div[@class='metadata-actions']/div[@class='metadata-save-button']/div[@class='save-cancel-buttons']/button"));
+                completeButton.Click();
                 Thread.Sleep(config.Page_Load);
 
                 var videoFile = @"Videos\" + video.Id + ".mp4";

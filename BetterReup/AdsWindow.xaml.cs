@@ -28,6 +28,7 @@ namespace BetterReup
         private void BtnStart_Click(object sender, RoutedEventArgs e)
         {
             lblStartStatus.Content = "Đang chạy...";
+            btnStart.IsEnabled = false;
             StartProgram();
         }
 

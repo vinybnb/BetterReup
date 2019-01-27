@@ -23,6 +23,7 @@ namespace BetterReup
 
         private void BtnStart_Click(object sender, RoutedEventArgs e)
         {
+            btnStart.IsEnabled = false;
             StartProgram();
         }
 

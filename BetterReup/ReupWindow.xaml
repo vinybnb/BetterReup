@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:BetterReup"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="Better Reup 0965.999.290 - 0976.931.999"
+        Title="Reup"
         Height="450"
         Width="800"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
