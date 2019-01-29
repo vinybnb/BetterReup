@@ -104,11 +104,12 @@ namespace BetterReup.Helpers
                 var adsTimesTextarea = driver.FindElement(By.XPath("//*/div[@class='yt-dialog-content']/span[@class='yt-uix-form-input-container yt-uix-form-input-textarea-container ']/textarea"));
                 adsTimesTextarea.SendKeys(Keys.Control + "a");
                 adsTimesTextarea.SendKeys(config.Ads_Times);
-                var adsTimesOkButton = driver.FindElement(By.XPath("//*/div[@class='yt-dialog-content']/div[@class='yt-uix-overlay-actions']/button"));
+                var adsTimesOkButton = driver.FindElement(By.XPath("//*/div[@class='yt-dialog-content']/div[@class='yt-uix-overlay-actions']/button[2]"));
                 adsTimesOkButton.Click();
                 Thread.Sleep(config.Inpage_Load);
-                var adsTimesSaveButton = driver.FindElement(By.XPath("//*/div[@id='metadata-editor-pane']/div[@class='sub-item-exp']/div[2]/div[@class='metadata-actions']/div[@class='save-cancel-buttons']/button"));
+                var adsTimesSaveButton = driver.FindElement(By.XPath("//*/div[@id='metadata-editor-pane']/div[@class='sub-item-exp']/div[2]/div[@class='metadata-actions']/div[@class='save-cancel-buttons']/button[2]"));
                 adsTimesSaveButton.Click();
+                Thread.Sleep(config.Page_Load);
 
                 return true;
             }

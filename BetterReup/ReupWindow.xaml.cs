@@ -71,12 +71,10 @@ namespace BetterReup
                 }
 
                 var toUploadVideos = new List<Video>();
-                var indexes = new List<int>();
                 for (var j = 0; j < chunks[i].Length; j++)
                 {
                     if (successDownloads[chunks[i][j]])
                     {
-                        indexes.Add(chunks[i][j]);
                         toUploadVideos.Add(videos[chunks[i][j]]);
                     }
                 }
@@ -88,7 +86,7 @@ namespace BetterReup
                     uploadingContent.Append(Environment.NewLine);
                 }
                 lblUploading.Content = uploadingContent;
-                var numUploadSuccess = helper.UploadVideos(toUploadVideos.ToArray(), indexes.ToArray());
+                var numUploadSuccess = helper.UploadVideos(toUploadVideos.ToArray());
                 lblUploaded.Content = $"Upload lỗi {toUploadVideos.Count() - numUploadSuccess} video";
                 numErrorUploads += (toUploadVideos.Count() - numUploadSuccess);
                 lblErrorUploads.Content = numErrorUploads.ToString();

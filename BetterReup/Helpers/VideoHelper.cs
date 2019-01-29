@@ -19,10 +19,12 @@ namespace BetterReup.Helpers
         protected YoutubeConverter Converter { get; set; }
         public static readonly Configs config = JsonConvert.DeserializeObject<Configs>(File.ReadAllText("Configs.json"));
         public static readonly string[] titles = File.ReadAllLines("Titles.txt").Where(title => title.Trim() != string.Empty).ToArray();
+        protected int CurrentTitleIndex { get; set; }
 
         public VideoHelper()
         {
             Converter = new YoutubeConverter();
+            CurrentTitleIndex = 0;
         }
 
         public async Task<bool> DownloadVideo(Video video)
@@ -79,8 +81,10 @@ namespace BetterReup.Helpers
             }
         }
 
-        public int UploadVideos(Video[] videos, int[] indexes)
+        public int UploadVideos(Video[] videos)
         {
+            if (videos.Length == 0) return 0;
+
             ChromeDriver driver = null;
             var numSuccess = 0;
             try
@@ -102,7 +106,7 @@ namespace BetterReup.Helpers
                 {
                     driver.ExecuteScript("window.open('', 'tab_" + i + "');");
                     driver.SwitchTo().Window("tab_" + i);
-                    var title = VideoHelper.config.Custom_Title == 1 ? VideoHelper.titles[indexes[i]] : videos[i].Title;
+                    var title = VideoHelper.config.Custom_Title == 1 ? VideoHelper.titles[CurrentTitleIndex++] : videos[i].Title;
                     UploadVideo(driver, videos[i], title);
                 }
 
