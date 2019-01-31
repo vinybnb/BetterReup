@@ -19,6 +19,7 @@ namespace BetterReup.Helpers
         protected YoutubeConverter Converter { get; set; }
         public static readonly Configs config = JsonConvert.DeserializeObject<Configs>(File.ReadAllText("Configs.json"));
         public static readonly string[] titles = File.ReadAllLines("Titles.txt").Where(title => title.Trim() != string.Empty).ToArray();
+        public static readonly string[] videoIds = File.ReadAllLines("Video_Ids.txt").Where(x => x.Trim() != string.Empty).ToArray();
         protected int CurrentTitleIndex { get; set; }
 
         public VideoHelper()

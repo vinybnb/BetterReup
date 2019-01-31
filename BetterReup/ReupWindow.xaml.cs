@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -30,7 +31,30 @@ namespace BetterReup
         public async void StartProgram()
         {
             var helper = new VideoHelper();
-            var videos = await helper.GetChannelUploadsAsync(VideoHelper.config.Channel_Id);
+
+            IReadOnlyList<Video> videos = null;
+            switch(VideoHelper.config.Media_Type)
+            {
+                case "Channel":
+                    videos = await helper.GetChannelUploadsAsync(VideoHelper.config.Media_Id);
+                    break;
+                case "Playlist":
+                    var playlist = await helper.GetPlaylistAsync(VideoHelper.config.Media_Id);
+                    videos = playlist.Videos;
+                    break;
+                case "Videos":
+                    var videosList = new List<Video>();
+                    foreach (var videoId in VideoHelper.videoIds)
+                    {
+                        var video = await helper.GetVideoAsync(videoId);
+                        videosList.Add(video);
+                    }
+                    videos = videosList;
+                    break;
+                default:
+                    return;
+            }
+
             lblTotalVideos.Content = $"Tổng số video: {videos.Count.ToString()}. Sẽ download từ video thứ {VideoHelper.config.Start} đến {VideoHelper.config.Start + VideoHelper.config.Num_Videos - 1}";
 
             var numErrorDownloads = 0;

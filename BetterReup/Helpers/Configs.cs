@@ -18,7 +18,8 @@ namespace BetterReup.Helpers
         public int Dialog_Load { get; set; }
         public int Upload_Check_Interval { get; set; }
         public int Custom_Title { get; set; }
-        public string Channel_Id { get; set; }
+        public string Media_Id { get; set; }
+        public string Media_Type { get; set; }
         public string Profile { get; set; }
         public string Video_Path { get; set; }
     }

@@ -97,9 +97,11 @@ namespace BetterReup.Helpers
             {
                 var moneyTab = driver.FindElement(By.XPath("//*/div[@id='metadata-editor-pane']/div[@class='sub-item-exp']/div[@class='metadata-editor-container']/div[@class='subnav clearfix']/ul[@class='tabs']/li[@class='tab-header  epic-nav-item'][2]/div[@class='tab-header-title']/a"));
                 moneyTab.Click();
+                
                 Thread.Sleep(config.Inpage_Load);
-                var editAdsTimesButton = driver.FindElement(By.XPath("//*/div[@class='ad-breaks-additional-controls']/button[@class='yt-uix-button yt-uix-button-size-default yt-uix-button-default ad-break-bulk-insert']"));
+                var editAdsTimesButton = driver.FindElement(By.XPath("//*/div[@class='monetize-with-ads monetize-options-box uses-ad-breaks-editor']/div[@class='monetization-tab-section ad-breaks']/ng-form[@class='ad-breaks-editor ng-pristine ng-untouched ng-valid ng-empty']/div[@class='ad-breaks-additional-controls']/button"));
                 editAdsTimesButton.Click();
+                
                 Thread.Sleep(config.Inpage_Load);
                 var adsTimesTextarea = driver.FindElement(By.XPath("//*/div[@class='yt-dialog-content']/span[@class='yt-uix-form-input-container yt-uix-form-input-textarea-container ']/textarea"));
                 adsTimesTextarea.SendKeys(Keys.Control + "a");
