@@ -17,7 +17,7 @@ namespace BetterReup.Helpers
 {
     class VideoHelper : YoutubeClient
     {
-        protected YoutubeConverter Converter { get; set; }
+        //protected YoutubeConverter Converter { get; set; }
         public static readonly Configs config = JsonConvert.DeserializeObject<Configs>(File.ReadAllText("Configs.json"));
         public static readonly string[] titles = File.ReadAllLines("Titles.txt").Where(title => title.Trim() != string.Empty).ToArray();
         public static readonly string[] videoIds = File.ReadAllLines("Video_Ids.txt").Where(x => x.Trim() != string.Empty).ToArray();
@@ -29,14 +29,14 @@ namespace BetterReup.Helpers
             CurrentTitleIndex = 0;
         }
 
-        public async Task<bool> DownloadVideo(Video video)
+        public async Task<bool> DownloadVideo(Video video, string videoFolder = "Videos")
         {
             try
             {
                 var streamInfoSet = await GetVideoMediaStreamInfosAsync(video.Id);
                 var streamInfo = streamInfoSet.Muxed.WithHighestVideoQuality();
                 //var ext = streamInfo.Container.GetFileExtension();
-                await DownloadMediaStreamAsync(streamInfo, $@"Videos\{video.Id}.mp4");
+                await DownloadMediaStreamAsync(streamInfo, $@"{videoFolder}\{video.Id}.mp4");
 
                 //await Converter.DownloadVideoAsync(video.Id, $@"Videos\{video.Id}.mp4");
                 var thumbnailUri = new Uri(video.Thumbnails.HighResUrl);

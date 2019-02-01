@@ -69,5 +69,12 @@ namespace BetterReup
             publicPrivateVideosWindow.Show();
             this.Close();
         }
+
+        private void btnDownloadVideos_Click(object sender, RoutedEventArgs e)
+        {
+            var downloadWindow = new DownloadWindow();
+            downloadWindow.Show();
+            this.Close();
+        }
     }
 }
