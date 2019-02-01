@@ -82,14 +82,13 @@ namespace BetterReup.Helpers
                         driver.SwitchTo().Window("tab_" + k);
                         driver.Navigate().GoToUrl(chunk[k]);
                         Thread.Sleep(config.Page_Load);
-                        
+                        using (StreamWriter writer = new StreamWriter("Ads_Video_Links.txt", true))
+                        {
+                            writer.WriteLine(chunk[k]);
+                        }
                         var status = SetAdsTimes(driver);
                         if (status)
                         {
-                            using (StreamWriter writer = new StreamWriter("Ads_Video_Links.txt", true))
-                            {
-                                writer.WriteLine(chunk[k]);
-                            }
                             numSuccess++;
                         }
                     }

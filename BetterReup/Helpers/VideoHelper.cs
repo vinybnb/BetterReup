@@ -150,11 +150,26 @@ namespace BetterReup.Helpers
                 System.Windows.Forms.SendKeys.SendWait(videoPath);
                 System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
                 Thread.Sleep(config.Page_Load);
-
-                var titleInput = driver.FindElement(By.XPath("//*/div/label[@class='basic-info-form-input'][1]/span[@class='yt-uix-form-input-container yt-uix-form-input-text-container yt-uix-form-input-non-empty']/input"));
-                titleInput.SendKeys(Keys.Control + "a");
-                System.Windows.Forms.Clipboard.SetText(title);
-                titleInput.SendKeys(Keys.Control + "v");
+                do
+                {
+                    try
+                    {
+                        var titleInput = driver.FindElement(By.XPath("//*/div/label[@class='basic-info-form-input'][1]/span[@class='yt-uix-form-input-container yt-uix-form-input-text-container yt-uix-form-input-non-empty']/input"));
+                        titleInput.SendKeys(Keys.Control + "a");
+                        System.Windows.Forms.Clipboard.SetText(title);
+                        titleInput.SendKeys(Keys.Control + "v");
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        using (StreamWriter writer = new StreamWriter("Errors.txt", true))
+                        {
+                            writer.WriteLine(ex.ToString());
+                        }
+                        Thread.Sleep(config.Page_Load);
+                    }
+                }
+                while (true);
 
                 var descriptionInput = driver.FindElement(By.XPath("//*/div/label[@class='basic-info-form-input'][2]/span[@class='yt-uix-form-input-container yt-uix-form-input-textarea-container ']/textarea"));
                 System.Windows.Forms.Clipboard.SetText(video.Description);
