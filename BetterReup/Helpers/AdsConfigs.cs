@@ -12,6 +12,8 @@ namespace BetterReup.Helpers
         public int Page_Load { get; set; }
         public int Inpage_Load { get; set; }
         public int Num_Tabs { get; set; }
+        public int Ads_Break { get; set; }
+        public int Num_Videos_Once { get; set; }
         public string Ads_Times { get; set; }
         public string Profile { get; set; }
     }

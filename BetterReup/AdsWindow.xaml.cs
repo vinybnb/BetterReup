@@ -32,12 +32,22 @@ namespace BetterReup
             StartProgram();
         }
 
-        public void StartProgram()
+        public async void StartProgram()
         {
             var adsHelper = new AdsHelper();
-            var numSuccess = adsHelper.InsertAds();
+            var totalNumSuccess = AdsHelper.adsVideoLinks.Length;
+            do
+            {
+                var numSuccess = adsHelper.InsertAds();
+                if (AdsHelper.isAllSetAds == true) break;
+                totalNumSuccess += numSuccess;
+                lblNumSuccess.Content = "Số video được chèn quảng cáo thành công: " + totalNumSuccess;
+
+                await Task.Delay(AdsHelper.config.Ads_Break);
+            }
+            while (true);
             lblStartStatus.Content = "Hoàn thành!";
-            lblNumSuccess.Content = "Số video được chèn quảng cáo thành công: " + numSuccess;
+            lblNumSuccess.Content = "Số video được chèn quảng cáo thành công: " + totalNumSuccess;
         }
 
         private void BtnHome_Click(object sender, RoutedEventArgs e)

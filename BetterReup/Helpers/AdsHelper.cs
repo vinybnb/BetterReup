@@ -14,6 +14,8 @@ namespace BetterReup.Helpers
     class AdsHelper
     {
         public static readonly AdsConfigs config = JsonConvert.DeserializeObject<AdsConfigs>(File.ReadAllText("Ads_Configs.json"));
+        public static readonly string[] adsVideoLinks = File.ReadAllLines("Ads_Video_Links.txt").Where(x => x.Trim() != string.Empty).ToArray();
+        public static bool isAllSetAds = false;
 
         public int InsertAds()
         {
@@ -39,6 +41,7 @@ namespace BetterReup.Helpers
                 var totalVideosText = driver.FindElement(By.XPath("//*/div[@id='creator-subheader']/div[@class='creator-subheader-content']/span[@id='creator-subheader-item-count']"));
                 var totalVideos = Int32.Parse(totalVideosText.Text);
                 var numPages = Math.Ceiling(totalVideos / 30.0);
+                var toSetAdsEditLinks = new List<string>();
                 for (var i = 1; i <= numPages; i++)
                 {
                     if (i != 1)
@@ -47,31 +50,56 @@ namespace BetterReup.Helpers
                         Thread.Sleep(config.Page_Load);
                     }
                     var editLinks = driver.FindElements(By.XPath("//*/div[@class='vm-video-info-container']/div[@class='vm-video-info'][2]/div[@class='vm-video-info vm-owner-bar']/span[@class='yt-uix-button-group']/a")).Where(x => x.Displayed).Select(x => x.GetAttribute("href")).ToArray();
-
-                    string[][] chunks = editLinks
-                    .Select((s, j) => new { Value = s, Index = j })
-                    .GroupBy(x => x.Index / config.Num_Tabs)
-                    .Select(grp => grp.Select(x => x.Value).ToArray())
-                    .ToArray();
-                    foreach (var chunk in chunks)
+                    foreach (var editLink in editLinks)
                     {
-                        for (var k = 0; k < chunk.Length; k++)
+                        if (!adsVideoLinks.Contains(editLink))
                         {
-                            driver.ExecuteScript("window.open('', 'tab_" + k + "');");
-                            driver.SwitchTo().Window("tab_" + k);
-                            driver.Navigate().GoToUrl(chunk[k]);
-                            Thread.Sleep(config.Page_Load);
-                            var status = SetAdsTimes(driver);
-                            if (status) numSuccess++;
+                            toSetAdsEditLinks.Add(editLink);
+                            if (toSetAdsEditLinks.Count() == config.Num_Videos_Once) break;
                         }
-                        Thread.Sleep(config.Page_Load);
-                        for (var k = 0; k < chunk.Length; k++)
-                        {
-                            driver.SwitchTo().Window("tab_" + k);
-                            driver.Close();
-                        }
-                        driver.SwitchTo().Window(driver.WindowHandles.First());
                     }
+
+                    if (toSetAdsEditLinks.Count() == config.Num_Videos_Once) break;
+                }
+
+                if (toSetAdsEditLinks.Count() == 0)
+                {
+                    isAllSetAds = true;
+
+                    return 0;
+                }
+
+                string[][] chunks = toSetAdsEditLinks
+                .Select((s, j) => new { Value = s, Index = j })
+                .GroupBy(x => x.Index / config.Num_Tabs)
+                .Select(grp => grp.Select(x => x.Value).ToArray())
+                .ToArray();
+                foreach (var chunk in chunks)
+                {
+                    for (var k = 0; k < chunk.Length; k++)
+                    {
+                        driver.ExecuteScript("window.open('', 'tab_" + k + "');");
+                        driver.SwitchTo().Window("tab_" + k);
+                        driver.Navigate().GoToUrl(chunk[k]);
+                        Thread.Sleep(config.Page_Load);
+                        
+                        var status = SetAdsTimes(driver);
+                        if (status)
+                        {
+                            using (StreamWriter writer = new StreamWriter("Ads_Video_Links.txt", true))
+                            {
+                                writer.WriteLine(chunk[k]);
+                            }
+                            numSuccess++;
+                        }
+                    }
+                    Thread.Sleep(config.Page_Load);
+                    for (var k = 0; k < chunk.Length; k++)
+                    {
+                        driver.SwitchTo().Window("tab_" + k);
+                        driver.Close();
+                    }
+                    driver.SwitchTo().Window(driver.WindowHandles.First());
                 }
             }
             catch (Exception ex)
