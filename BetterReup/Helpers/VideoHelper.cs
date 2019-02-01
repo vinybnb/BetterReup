@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using YoutubeExplode;
 using YoutubeExplode.Converter;
 using YoutubeExplode.Models;
+using YoutubeExplode.Models.MediaStreams;
 
 namespace BetterReup.Helpers
 {
@@ -24,7 +25,7 @@ namespace BetterReup.Helpers
 
         public VideoHelper()
         {
-            Converter = new YoutubeConverter();
+            //Converter = new YoutubeConverter();
             CurrentTitleIndex = 0;
         }
 
@@ -32,7 +33,12 @@ namespace BetterReup.Helpers
         {
             try
             {
-                await Converter.DownloadVideoAsync(video.Id, $@"Videos\{video.Id}.mp4");
+                var streamInfoSet = await GetVideoMediaStreamInfosAsync(video.Id);
+                var streamInfo = streamInfoSet.Muxed.WithHighestVideoQuality();
+                //var ext = streamInfo.Container.GetFileExtension();
+                await DownloadMediaStreamAsync(streamInfo, $@"Videos\{video.Id}.mp4");
+
+                //await Converter.DownloadVideoAsync(video.Id, $@"Videos\{video.Id}.mp4");
                 var thumbnailUri = new Uri(video.Thumbnails.HighResUrl);
                 using (System.Net.WebClient client = new System.Net.WebClient())
                 {
