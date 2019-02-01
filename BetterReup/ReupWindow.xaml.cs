@@ -33,7 +33,8 @@ namespace BetterReup
             var helper = new VideoHelper();
 
             IReadOnlyList<Video> videos = null;
-            switch(VideoHelper.config.Media_Type)
+            lblTotalVideos.Content = "Đang lấy thông tin các video";
+            switch (VideoHelper.config.Media_Type)
             {
                 case "Channel":
                     videos = await helper.GetChannelUploadsAsync(VideoHelper.config.Media_Id);
@@ -52,6 +53,7 @@ namespace BetterReup
                     videos = videosList;
                     break;
                 default:
+                    lblTotalVideos.Content = "Không thể lấy thông tin các videos. Vui lòng cấu hình Media_Type là một trong các loại: Channel, Playlist, Videos";
                     return;
             }
 
