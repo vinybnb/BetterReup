@@ -35,7 +35,7 @@ namespace BetterReup
         public async void StartProgram()
         {
             var adsHelper = new AdsHelper();
-            var totalNumSuccess = AdsHelper.adsVideoLinks.Length;
+            var totalNumSuccess = AdsHelper.adsVideoLinks.Count;
             do
             {
                 var numSuccess = adsHelper.InsertAds();

@@ -14,7 +14,7 @@ namespace BetterReup.Helpers
     class AdsHelper
     {
         public static readonly AdsConfigs config = JsonConvert.DeserializeObject<AdsConfigs>(File.ReadAllText("Ads_Configs.json"));
-        public static readonly string[] adsVideoLinks = File.ReadAllLines("Ads_Video_Links.txt").Where(x => x.Trim() != string.Empty).ToArray();
+        public static List<string> adsVideoLinks = File.ReadAllLines("Ads_Video_Links.txt").Where(x => x.Trim() != string.Empty).ToList();
         public static bool isAllSetAds = false;
 
         public int InsertAds()
@@ -55,6 +55,7 @@ namespace BetterReup.Helpers
                         if (!adsVideoLinks.Contains(editLink))
                         {
                             toSetAdsEditLinks.Add(editLink);
+                            adsVideoLinks.Add(editLink);
                             if (toSetAdsEditLinks.Count() == config.Num_Videos_Once) break;
                         }
                     }
