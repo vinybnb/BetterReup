@@ -46,21 +46,24 @@ namespace BetterReup.Helpers
                 {
                     if (i != 1)
                     {
-                        driver.Navigate().GoToUrl("https://www.youtube.com/my_videos?ar=2&o=U&pi=" + i);
+                        driver.Navigate().GoToUrl("https://www.youtube.com/my_videos?o=U&ar=2&pi=" + i);
                         Thread.Sleep(config.Page_Load);
                     }
-                    var editLinks = driver.FindElements(By.XPath("//*/div[@class='vm-video-info-container']/div[@class='vm-video-info'][2]/div[@class='vm-video-info vm-owner-bar']/span[@class='yt-uix-button-group']/a")).Where(x => x.Displayed).Select(x => x.GetAttribute("href")).ToArray();
+                    var editLinks = driver.FindElements(By.XPath("//*/div[@class='vm-video-info-container']/div[@class='vm-video-info'][2]/div[@class='vm-video-info vm-owner-bar']/span[@class='yt-uix-button-group']/a")).Where(x => x.Displayed).Select(x => x.GetAttribute("href")).ToList();
                     foreach (var editLink in editLinks)
                     {
-                        if (!adsVideoLinks.Contains(editLink))
-                        {
-                            toSetAdsEditLinks.Add(editLink);
-                            adsVideoLinks.Add(editLink);
-                            if (toSetAdsEditLinks.Count() == config.Num_Videos_Once) break;
-                        }
+                        editLink.Replace("ar=2&o=U", "o=U&ar=2");
                     }
-
-                    if (toSetAdsEditLinks.Count() == config.Num_Videos_Once) break;
+                    var notSetLinks = editLinks.Except(adsVideoLinks).ToList();
+                    if (notSetLinks.Count() >= config.Num_Videos_Once - toSetAdsEditLinks.Count())
+                    {
+                        toSetAdsEditLinks = toSetAdsEditLinks.Concat(notSetLinks.Take(config.Num_Videos_Once - toSetAdsEditLinks.Count())).ToList();
+                        break;
+                    }
+                    else
+                    {
+                        toSetAdsEditLinks = toSetAdsEditLinks.Concat(notSetLinks).ToList();
+                    }
                 }
 
                 if (toSetAdsEditLinks.Count() == 0)
@@ -83,10 +86,13 @@ namespace BetterReup.Helpers
                         driver.SwitchTo().Window("tab_" + k);
                         driver.Navigate().GoToUrl(chunk[k]);
                         Thread.Sleep(config.Page_Load);
+
+                        adsVideoLinks.Add(chunk[k]);
                         using (StreamWriter writer = new StreamWriter("Ads_Video_Links.txt", true))
                         {
                             writer.WriteLine(chunk[k]);
                         }
+
                         var status = SetAdsTimes(driver);
                         if (status)
                         {
@@ -123,6 +129,8 @@ namespace BetterReup.Helpers
         {
             try
             {
+                var durationElement = driver.FindElement(By.XPath("//*/div[@id='player-and-info-pane']/div[@id='video-info']/dl/dd[3]"));
+                var adsTimes = CalculateAdsTimes(durationElement.Text);
                 var moneyTab = driver.FindElement(By.XPath("//*/div[@id='metadata-editor-pane']/div[@class='sub-item-exp']/div[@class='metadata-editor-container']/div[@class='subnav clearfix']/ul[@class='tabs']/li[@class='tab-header  epic-nav-item'][2]/div[@class='tab-header-title']/a"));
                 moneyTab.Click();
                 
@@ -133,7 +141,9 @@ namespace BetterReup.Helpers
                 Thread.Sleep(config.Inpage_Load);
                 var adsTimesTextarea = driver.FindElement(By.XPath("//*/div[@class='yt-dialog-content']/span[@class='yt-uix-form-input-container yt-uix-form-input-textarea-container ']/textarea"));
                 adsTimesTextarea.SendKeys(Keys.Control + "a");
-                adsTimesTextarea.SendKeys(config.Ads_Times);
+                //var durationElement = driver.FindElement(By.XPath("//*/div[@id='player-and-info-pane']/div[@id='video-info']/dl/dd[3]"));
+                //var adsTimes = CalculateAdsTimes(durationElement.Text);
+                adsTimesTextarea.SendKeys(adsTimes);
                 var adsTimesOkButton = driver.FindElement(By.XPath("//*/div[@class='yt-dialog-content']/div[@class='yt-uix-overlay-actions']/button[2]"));
                 adsTimesOkButton.Click();
                 Thread.Sleep(config.Inpage_Load);
@@ -152,6 +162,26 @@ namespace BetterReup.Helpers
             }
 
             return false;
+        }
+
+        protected string CalculateAdsTimes(string durationText)
+        {
+            var adsTimes = new List<string>();
+
+            var startTime = TimeSpan.Parse(config.Ads_Start);
+            if (durationText.Split(':').Length == 2) // minute and second only
+            {
+                durationText = "0:" + durationText;
+            }
+            var durationTime = TimeSpan.Parse(durationText);
+
+            while (startTime < durationTime)
+            {
+                adsTimes.Add(startTime.ToString());
+                startTime = startTime.Add(new TimeSpan(0, config.Ads_Period, 0));
+            }
+
+            return string.Join(", ", adsTimes);
         }
     }
 }
