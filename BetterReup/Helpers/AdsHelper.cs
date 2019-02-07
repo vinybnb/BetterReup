@@ -50,9 +50,10 @@ namespace BetterReup.Helpers
                         Thread.Sleep(config.Page_Load);
                     }
                     var editLinks = driver.FindElements(By.XPath("//*/div[@class='vm-video-info-container']/div[@class='vm-video-info'][2]/div[@class='vm-video-info vm-owner-bar']/span[@class='yt-uix-button-group']/a")).Where(x => x.Displayed).Select(x => x.GetAttribute("href")).ToList();
-                    foreach (var editLink in editLinks)
+
+                    for (var j = 0; j < editLinks.Count(); j++)
                     {
-                        editLink.Replace("ar=2&o=U", "o=U&ar=2");
+                        editLinks[j] = editLinks[j].Replace("ar=2&o=U", "o=U&ar=2");
                     }
                     var notSetLinks = editLinks.Except(adsVideoLinks).ToList();
                     if (notSetLinks.Count() >= config.Num_Videos_Once - toSetAdsEditLinks.Count())
