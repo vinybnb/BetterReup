@@ -129,8 +129,6 @@ namespace BetterReup.Helpers
         {
             try
             {
-                var durationElement = driver.FindElement(By.XPath("//*/div[@id='player-and-info-pane']/div[@id='video-info']/dl/dd[3]"));
-                var adsTimes = CalculateAdsTimes(durationElement.Text);
                 var moneyTab = driver.FindElement(By.XPath("//*/div[@id='metadata-editor-pane']/div[@class='sub-item-exp']/div[@class='metadata-editor-container']/div[@class='subnav clearfix']/ul[@class='tabs']/li[@class='tab-header  epic-nav-item'][2]/div[@class='tab-header-title']/a"));
                 moneyTab.Click();
                 
@@ -141,8 +139,8 @@ namespace BetterReup.Helpers
                 Thread.Sleep(config.Inpage_Load);
                 var adsTimesTextarea = driver.FindElement(By.XPath("//*/div[@class='yt-dialog-content']/span[@class='yt-uix-form-input-container yt-uix-form-input-textarea-container ']/textarea"));
                 adsTimesTextarea.SendKeys(Keys.Control + "a");
-                //var durationElement = driver.FindElement(By.XPath("//*/div[@id='player-and-info-pane']/div[@id='video-info']/dl/dd[3]"));
-                //var adsTimes = CalculateAdsTimes(durationElement.Text);
+                var durationElement = driver.FindElement(By.XPath("//*/div[@id='player-and-info-pane']/div[@id='video-info']/dl/dd[3]"));
+                var adsTimes = CalculateAdsTimes(durationElement.Text);
                 adsTimesTextarea.SendKeys(adsTimes);
                 var adsTimesOkButton = driver.FindElement(By.XPath("//*/div[@class='yt-dialog-content']/div[@class='yt-uix-overlay-actions']/button[2]"));
                 adsTimesOkButton.Click();
@@ -178,7 +176,7 @@ namespace BetterReup.Helpers
             while (startTime < durationTime)
             {
                 adsTimes.Add(startTime.ToString());
-                startTime = startTime.Add(new TimeSpan(0, config.Ads_Period, 0));
+                startTime = startTime.Add(TimeSpan.Parse(config.Ads_Period));
             }
 
             return string.Join(", ", adsTimes);

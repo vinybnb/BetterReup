@@ -15,7 +15,7 @@ namespace BetterReup.Helpers
         public int Ads_Break { get; set; }
         public int Num_Videos_Once { get; set; }
         public string Ads_Start { get; set; }
-        public int Ads_Period { get; set; }
+        public string Ads_Period { get; set; }
         public string Profile { get; set; }
     }
 }
