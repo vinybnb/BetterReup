@@ -23,9 +23,8 @@ namespace BetterReup.Helpers
         public static readonly string[] titles = File.ReadAllLines("Titles.txt").Where(title => title.Trim() != string.Empty).ToArray();
         public static readonly string[] videoIds = File.ReadAllLines("Video_Ids.txt").Where(x => x.Trim() != string.Empty).ToArray();
         public static readonly string[] links = File.ReadAllLines("Links.txt").Where(x => x.Trim() != string.Empty).ToArray();
-        public static List<string> insertedEndScreenVideoLinks = File.ReadAllLines("Inserted_End_Screen_Video_Links.txt").Where(x => x.Trim() != string.Empty).ToList();
+        public static List<string> insertedEndScreenVideoLinks = File.ReadAllLines("Inserted_End_Screen_Links.txt").Where(x => x.Trim() != string.Empty).ToList();
         protected int CurrentTitleIndex { get; set; }
-        public static bool isAllInsertedEndScreen = false;
 
         public VideoHelper()
         {
@@ -314,7 +313,7 @@ namespace BetterReup.Helpers
                         driver.Navigate().GoToUrl("https://www.youtube.com/my_videos?o=U&ar=2&pi=" + i);
                         Thread.Sleep(config.Page_Load);
                     }
-                    var editLinks = driver.FindElements(By.XPath("//*/div[@class='vm-video-info-container']/div[@class='vm-video-info'][2]/div[@class='vm-video-info vm-owner-bar']/span[@class='yt-uix-button-group']/a")).Where(x => x.Displayed).Select(x => x.GetAttribute("href")).ToList();
+                    var editLinks = driver.FindElements(By.XPath("//*/div[@class='vm-video-info-container']/div[@class='vm-video-info'][2]/div[@class='vm-video-info vm-owner-bar']/span[@class='yt-uix-button-group']/a")).Where(x => x.Displayed).Select(x => x.GetAttribute("href")).Reverse().ToList();
 
                     for (var j = 0; j < editLinks.Count(); j++)
                     {
@@ -330,13 +329,6 @@ namespace BetterReup.Helpers
                     {
                         toInsertEndScreenEditLinks = toInsertEndScreenEditLinks.Concat(notInsertedLinks).ToList();
                     }
-                }
-
-                if (toInsertEndScreenEditLinks.Count() == 0)
-                {
-                    isAllInsertedEndScreen = true;
-
-                    return 0;
                 }
 
                 string[][] chunks = toInsertEndScreenEditLinks
@@ -357,7 +349,7 @@ namespace BetterReup.Helpers
                         if (status)
                         {
                             insertedEndScreenVideoLinks.Add(chunk[k]);
-                            using (StreamWriter writer = new StreamWriter("Inserted_End_Screen_Video_Links.txt", true))
+                            using (StreamWriter writer = new StreamWriter("Inserted_End_Screen_Links.txt", true))
                             {
                                 writer.WriteLine(chunk[k]);
                             }
@@ -425,6 +417,7 @@ namespace BetterReup.Helpers
                     inputLinkElement.SendKeys(Keys.Enter);
                     Thread.Sleep(config.Page_Load);
                 }
+                
                 var saveElement = driver.FindElement(By.XPath("//*/div[@id='creator-editor-container']/div[@class='creator-editor-content']/div[@class='annotator-default-content']/div[@class='creator-editor-header clearfix endscreen-editor']/button[@id='endscreen-editor-save']/span[@class='yt-uix-button-content']"));
                 saveElement.Click();
                 Thread.Sleep(config.Page_Load);
