@@ -29,15 +29,17 @@
         <Label x:Name="lblUploading" Content="..." Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,141,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="707"/>
         <Label x:Name="lblUploaded" Content="..." Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,313,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="707"/>
         <Label Content="Tổng số video download lỗi:" Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,343,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
-        <Label x:Name="lblErrorDownloads" Content="0" Grid.Column="2" HorizontalAlignment="Left" Margin="30.333,343,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="176"/>
+        <Label x:Name="lblErrorDownloads" Content="0" Grid.Column="2" HorizontalAlignment="Left" Margin="39.143,344,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="176"/>
         <Label Content="Tổng số video upload lỗi:" Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,373,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
-        <Label x:Name="lblErrorUploads" Content="0" Grid.Column="2" HorizontalAlignment="Left" Margin="30.333,373,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="176"/>
+        <Label x:Name="lblErrorUploads" Content="0" Grid.Column="2" HorizontalAlignment="Left" Margin="39.143,373,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="176"/>
         <Label Content="Tổng số video đã download:" Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,403,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
-        <Label x:Name="lblNumDownloads" Content="0" Grid.Column="2" HorizontalAlignment="Left" Margin="30.333,403,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="176"/>
-        <Label Content="Tổng số video đã upload:" Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,433,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
-        <Label x:Name="lblNumUploads" Content="0" Grid.Column="2" HorizontalAlignment="Left" Margin="30.333,433,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="176"/>
-        <Label x:Name="lblDone" Content="" Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,463,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
+        <Label x:Name="lblNumDownloads" Content="0" Grid.Column="2" HorizontalAlignment="Left" Margin="39.143,404,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="176"/>
+        <Label Content="Tổng số video đã upload:" Grid.Column="2" HorizontalAlignment="Left" Margin="153.143,347,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="176"/>
+        <Label x:Name="lblNumUploads" Content="0" Grid.Column="2" HorizontalAlignment="Left" Margin="415.143,347,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="176"/>
+        <Label x:Name="lblDone" Content="Sẵn sàng" Grid.Column="1" HorizontalAlignment="Left" Margin="0.333,463,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Grid.ColumnSpan="2" Width="176"/>
         <Button x:Name="btnStart" Content="Bắt đầu" Grid.Column="2" HorizontalAlignment="Left" Margin="114.333,10,0,0" VerticalAlignment="Top" Width="177" Click="BtnStart_Click"/>
         <Button x:Name="btnHome" Content="Trang chủ" Grid.Column="2" HorizontalAlignment="Left" Margin="471.333,10,0,0" VerticalAlignment="Top" Width="96" Background="#FF1F9D32" Click="BtnHome_Click"/>
+        <Label Content="Tổng số video đã chèn màn hình kết thúc:" Grid.Column="2" HorizontalAlignment="Left" Margin="153.143,374,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="253"/>
+        <Label x:Name="lblNumInsertedEndScreen" Content="0" Grid.Column="2" HorizontalAlignment="Left" Margin="415.143,374,0,0" VerticalAlignment="Top" RenderTransformOrigin="2.875,0.526" Width="176"/>
     </Grid>
 </Window>

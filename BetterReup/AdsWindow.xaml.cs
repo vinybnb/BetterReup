@@ -39,9 +39,9 @@ namespace BetterReup
             do
             {
                 var numSuccess = adsHelper.InsertAds();
-                if (AdsHelper.isAllSetAds == true) break;
                 totalNumSuccess += numSuccess;
                 lblNumSuccess.Content = "Số video được chèn quảng cáo thành công: " + totalNumSuccess;
+                if (AdsHelper.isAllSetAds == true) break;
 
                 await Task.Delay(AdsHelper.config.Ads_Break);
             }

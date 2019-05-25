@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +22,10 @@ namespace BetterReup.Helpers
         public static readonly Configs config = JsonConvert.DeserializeObject<Configs>(File.ReadAllText("Configs.json"));
         public static readonly string[] titles = File.ReadAllLines("Titles.txt").Where(title => title.Trim() != string.Empty).ToArray();
         public static readonly string[] videoIds = File.ReadAllLines("Video_Ids.txt").Where(x => x.Trim() != string.Empty).ToArray();
+        public static readonly string[] links = File.ReadAllLines("Links.txt").Where(x => x.Trim() != string.Empty).ToArray();
+        public static List<string> insertedEndScreenVideoLinks = File.ReadAllLines("Inserted_End_Screen_Video_Links.txt").Where(x => x.Trim() != string.Empty).ToList();
         protected int CurrentTitleIndex { get; set; }
+        public static bool isAllInsertedEndScreen = false;
 
         public VideoHelper()
         {
@@ -35,8 +39,8 @@ namespace BetterReup.Helpers
             {
                 var streamInfoSet = await GetVideoMediaStreamInfosAsync(video.Id);
                 var streamInfo = streamInfoSet.Muxed.WithHighestVideoQuality();
-                //var ext = streamInfo.Container.GetFileExtension();
-                await DownloadMediaStreamAsync(streamInfo, $@"{videoFolder}\{video.Id}.mp4");
+                var ext = streamInfo.Container.GetFileExtension();
+                await DownloadMediaStreamAsync(streamInfo, $@"{videoFolder}\{video.Id}.{ext}");
 
                 //await Converter.DownloadVideoAsync(video.Id, $@"Videos\{video.Id}.mp4");
                 var thumbnailUri = new Uri(video.Thumbnails.HighResUrl);
@@ -63,8 +67,9 @@ namespace BetterReup.Helpers
         {
             try
             {
-                var orginalVideoPath = @"Videos\" + video.Id + ".mp4";
-                var outPutVideoPath = @"Videos\" + video.Id + "_cut.mp4";
+                var extension = GetVideoExtension(video.Id);
+                var orginalVideoPath = @"Videos\" + video.Id + extension;
+                var outPutVideoPath = @"Videos\" + video.Id + "_cut" + extension;
                 var client = new YoutubeClient();
                 Random random = new Random();
                 string ffmpeg = "ffmpeg.exe";
@@ -93,6 +98,7 @@ namespace BetterReup.Helpers
             if (videos.Length == 0) return 0;
 
             ChromeDriver driver = null;
+            Random random = new Random();
             var numSuccess = 0;
             try
             {
@@ -106,6 +112,11 @@ namespace BetterReup.Helpers
                 if (config.Mode == 0)
                 {
                     options.AddArguments("--headless");
+                    options.AddArguments("--disable-gpu");
+                    options.AddArguments("--window-size=1280,800");
+                    options.AddArguments("--allow-insecure-localhost");
+                    //specifically this line here :)
+                    options.AddAdditionalCapability("acceptInsecureCerts", true, true);
                 }
                 driver = new ChromeDriver(options);
 
@@ -113,7 +124,7 @@ namespace BetterReup.Helpers
                 {
                     driver.ExecuteScript("window.open('', 'tab_" + i + "');");
                     driver.SwitchTo().Window("tab_" + i);
-                    var title = VideoHelper.config.Custom_Title == 1 ? VideoHelper.titles[CurrentTitleIndex++] : videos[i].Title;
+                    var title = VideoHelper.config.Custom_Title == 1 ? VideoHelper.titles[CurrentTitleIndex++] : videos[i].Title + " #" + random.Next(1, 500000);
                     UploadVideo(driver, videos[i], title);
                 }
 
@@ -147,14 +158,12 @@ namespace BetterReup.Helpers
         {
             try
             {
+                var extension = GetVideoExtension(video.Id);
                 driver.Navigate().GoToUrl("https://www.youtube.com/upload");
                 Thread.Sleep(config.Page_Load);
-                var uploadButton = driver.FindElement(By.XPath("//*/div[@class='upload-widget yt-card branded-page-box-padding']/div[@id='upload-prompt-box']"));
-                uploadButton.Click();
-                Thread.Sleep(config.Dialog_Load);
-                var videoPath = $@"{config.Video_Path}{video.Id}_cut.mp4";
-                System.Windows.Forms.SendKeys.SendWait(videoPath);
-                System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
+                var uploadButton = driver.FindElement(By.XPath("//*/div[@class='upload-widget yt-card branded-page-box-padding']/div[@id='upload-prompt-box']/div[2]/input"));
+                var videoPath = $@"{config.Video_Path}{video.Id}_cut{extension}";
+                uploadButton.SendKeys(videoPath);
                 Thread.Sleep(config.Page_Load);
                 do
                 {
@@ -162,7 +171,10 @@ namespace BetterReup.Helpers
                     {
                         var titleInput = driver.FindElement(By.XPath("//*/div/label[@class='basic-info-form-input'][1]/span[@class='yt-uix-form-input-container yt-uix-form-input-text-container yt-uix-form-input-non-empty']/input"));
                         titleInput.SendKeys(Keys.Control + "a");
-                        System.Windows.Forms.Clipboard.SetText(title);
+                        var titleThread = new Thread(() => System.Windows.Forms.Clipboard.SetText(title));
+                        titleThread.SetApartmentState(ApartmentState.STA); //Set the thread to STA
+                        titleThread.Start();
+                        titleThread.Join();
                         titleInput.SendKeys(Keys.Control + "v");
                         break;
                     }
@@ -178,13 +190,28 @@ namespace BetterReup.Helpers
                 while (true);
 
                 var descriptionInput = driver.FindElement(By.XPath("//*/div/label[@class='basic-info-form-input'][2]/span[@class='yt-uix-form-input-container yt-uix-form-input-textarea-container ']/textarea"));
-                System.Windows.Forms.Clipboard.SetText(video.Description);
+                Thread thread = null;
+                if (video.Description == string.Empty)
+                {
+                    thread = new Thread(() => System.Windows.Forms.Clipboard.Clear());
+                }
+                else
+                {
+                    thread = new Thread(() => System.Windows.Forms.Clipboard.SetText(video.Description));
+                }
+
+                thread.SetApartmentState(ApartmentState.STA); //Set the thread to STA
+                thread.Start();
+                thread.Join();
                 descriptionInput.SendKeys(Keys.Control + "v");
 
                 var tagInput = driver.FindElement(By.XPath("//*/div/div[@class='basic-info-form-input']/span[@class='yt-uix-form-input-container yt-uix-form-input-textarea-container']/div[@class='video-settings-tag-chips-container yt-uix-form-input-textarea']/span[@class='yt-uix-form-input-placeholder-container']/input"));
                 foreach (var tag in video.Keywords)
                 {
-                    System.Windows.Forms.Clipboard.SetText(tag);
+                    thread = new Thread(() => System.Windows.Forms.Clipboard.SetText(tag));
+                    thread.SetApartmentState(ApartmentState.STA); //Set the thread to STA
+                    thread.Start();
+                    thread.Join();
                     tagInput.SendKeys(Keys.Control + "v");
                     tagInput.SendKeys(Keys.Enter);
                 }
@@ -213,12 +240,9 @@ namespace BetterReup.Helpers
 
                 try
                 {
-                    var thumbnailButton = driver.FindElement(By.XPath("//*/span[@class='custom-thumb-selectable']/div[@class='custom-thumb-area horizontal-custom-thumb-area small-thumb-dimensions']/div[@class='custom-thumb-container']"));
-                    thumbnailButton.Click();
-                    Thread.Sleep(config.Dialog_Load);
+                    var thumbnailButton = driver.FindElement(By.XPath("//*/span[@class='custom-thumb-selectable']/div[@class='custom-thumb-area horizontal-custom-thumb-area small-thumb-dimensions']/div[@class='custom-thumb-container']/div/div/input"));
                     var thumbnailPath = $@"{config.Video_Path}{video.Id}.jpg";
-                    System.Windows.Forms.SendKeys.SendWait(thumbnailPath);
-                    System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
+                    thumbnailButton.SendKeys(thumbnailPath);
                     Thread.Sleep(config.Page_Load);
                 }
                 catch (Exception) { }
@@ -227,8 +251,9 @@ namespace BetterReup.Helpers
                 completeButton.Click();
                 Thread.Sleep(config.Page_Load);
 
-                var videoFile = @"Videos\" + video.Id + ".mp4";
-                var videoCutFile = @"Videos\" + video.Id + "_cut.mp4";
+                var extension = GetVideoExtension(video.Id);
+                var videoFile = @"Videos\" + video.Id + extension;
+                var videoCutFile = @"Videos\" + video.Id + "_cut" + extension;
                 var thumbnailFile = @"Videos\" + video.Id + ".jpg";
                 if (File.Exists(videoFile))
                 {
@@ -257,109 +282,184 @@ namespace BetterReup.Helpers
             return status;
         }
 
+        public int InsertEndScreens()
+        {
+            ChromeDriver driver = null;
+            var numSuccess = 0;
+            try
+            {
+                string profile_path = Path.GetDirectoryName(config.Profile);
+                string profile_name = Path.GetFileName(config.Profile);
+                ChromeOptions options = new ChromeOptions();
+                options.AddArguments("--user-data-dir=" + profile_path);
+                options.AddArguments("--profile-directory=" + profile_name);
+                options.AddArguments("start-maximized");
+                options.AddArguments("disable-infobars");
+                if (config.Mode == 0)
+                {
+                    options.AddArguments("--headless");
+                }
+                driver = new ChromeDriver(options);
+                driver.Navigate().GoToUrl("https://www.youtube.com/my_videos?o=U&ar=2");
+                Thread.Sleep(config.Page_Load);
 
-        //public bool UploadVideo(Video video, string title)
-        //{
-        //    ChromeDriver driver = null;
-        //    var status = false;
-        //    try
-        //    {
-        //        string profile_path = Path.GetDirectoryName(config.Profile);
-        //        string profile_name = Path.GetFileName(config.Profile);
-        //        ChromeOptions options = new ChromeOptions();
-        //        options.AddArguments("--user-data-dir=" + profile_path);
-        //        options.AddArguments("--profile-directory=" + profile_name);
-        //        options.AddArguments("start-maximized");
-        //        options.AddArguments("disable-infobars");
-        //        if (config.Mode == 0)
-        //        {
-        //            options.AddArguments("--headless");
-        //        }
-        //        driver = new ChromeDriver(options);
-        //        driver.Navigate().GoToUrl("https://www.youtube.com/upload");
-        //        Thread.Sleep(config.Page_Load);
-        //        var uploadButton = driver.FindElement(By.XPath("//*/div[@id='upload-prompt-box']/div[2]"));
-        //        uploadButton.Click();
-        //        Thread.Sleep(config.Dialog_Load);
-        //        var videoPath = $@"{config.Video_Path}{video.Id}_cut.mp4";
-        //        System.Windows.Forms.Clipboard.SetText(videoPath);
-        //        System.Windows.Forms.SendKeys.SendWait(@"^{v}");
-        //        System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
-        //        Thread.Sleep(config.Page_Load);
+                var totalVideosText = driver.FindElement(By.XPath("//*/div[@id='creator-subheader']/div[@class='creator-subheader-content']/span[@id='creator-subheader-item-count']"));
+                var totalVideos = Int32.Parse(totalVideosText.Text);
+                var numPages = Math.Ceiling(totalVideos / 30.0);
+                var toInsertEndScreenEditLinks = new List<string>();
+                for (var i = 1; i <= numPages; i++)
+                {
+                    if (i != 1)
+                    {
+                        driver.Navigate().GoToUrl("https://www.youtube.com/my_videos?o=U&ar=2&pi=" + i);
+                        Thread.Sleep(config.Page_Load);
+                    }
+                    var editLinks = driver.FindElements(By.XPath("//*/div[@class='vm-video-info-container']/div[@class='vm-video-info'][2]/div[@class='vm-video-info vm-owner-bar']/span[@class='yt-uix-button-group']/a")).Where(x => x.Displayed).Select(x => x.GetAttribute("href")).ToList();
 
-        //        var titleInput = driver.FindElement(By.XPath("//*/input[@class='yt-uix-form-input-text video-settings-title']"));
-        //        titleInput.SendKeys(Keys.Control + "a");
-        //        System.Windows.Forms.Clipboard.SetText(title);
-        //        titleInput.SendKeys(Keys.Control + "v");
+                    for (var j = 0; j < editLinks.Count(); j++)
+                    {
+                        editLinks[j] = editLinks[j].Replace("ar=2&o=U", "o=U&ar=2");
+                    }
+                    var notInsertedLinks = editLinks.Except(insertedEndScreenVideoLinks).ToList();
+                    if (notInsertedLinks.Count() >= config.Num_Videos_Inserted_End_Screen_Once - toInsertEndScreenEditLinks.Count())
+                    {
+                        toInsertEndScreenEditLinks = toInsertEndScreenEditLinks.Concat(notInsertedLinks.Take(config.Num_Videos_Inserted_End_Screen_Once - toInsertEndScreenEditLinks.Count())).ToList();
+                        break;
+                    }
+                    else
+                    {
+                        toInsertEndScreenEditLinks = toInsertEndScreenEditLinks.Concat(notInsertedLinks).ToList();
+                    }
+                }
 
-        //        var descriptionInput = driver.FindElement(By.XPath("//*/textarea[@class='yt-uix-form-input-textarea video-settings-description']"));
-        //        System.Windows.Forms.Clipboard.SetText(video.Description);
-        //        descriptionInput.SendKeys(Keys.Control + "v");
+                if (toInsertEndScreenEditLinks.Count() == 0)
+                {
+                    isAllInsertedEndScreen = true;
 
-        //        var tagInput = driver.FindElement(By.XPath("//*/input[@class='video-settings-add-tag']"));
-        //        foreach (var tag in video.Keywords)
-        //        {
-        //            System.Windows.Forms.Clipboard.SetText(tag);
-        //            tagInput.SendKeys(Keys.Control + "v");
-        //            tagInput.SendKeys(Keys.Enter);
-        //        }
+                    return 0;
+                }
 
-        //        var thumbnailButton = driver.FindElement(By.XPath("//*/span[@class='custom-thumb-selectable']/div[@class='custom-thumb-area horizontal-custom-thumb-area small-thumb-dimensions']/div[@class='custom-thumb-container']"));
-        //        thumbnailButton.Click();
-        //        Thread.Sleep(config.Dialog_Load);
-        //        var thumbnailPath = $@"{config.Video_Path}{video.Id}.jpg";
-        //        System.Windows.Forms.Clipboard.SetText(thumbnailPath);
-        //        System.Windows.Forms.SendKeys.SendWait(@"^{v}");
-        //        System.Windows.Forms.SendKeys.SendWait(@"{Enter}");
-        //        Thread.Sleep(config.Page_Load);
+                string[][] chunks = toInsertEndScreenEditLinks
+                .Select((s, j) => new { Value = s, Index = j })
+                .GroupBy(x => x.Index / config.Num_Tabs_Inserted_End_Screen_Once)
+                .Select(grp => grp.Select(x => x.Value).ToArray())
+                .ToArray();
+                foreach (var chunk in chunks)
+                {
+                    for (var k = 0; k < chunk.Length; k++)
+                    {
+                        driver.ExecuteScript("window.open('', 'tab_" + k + "');");
+                        driver.SwitchTo().Window("tab_" + k);
+                        driver.Navigate().GoToUrl(chunk[k]);
+                        Thread.Sleep(config.Page_Load);
 
-        //        do
-        //        {
-        //            var processingPercentageTexts = driver.FindElements(By.XPath("//*/div[@class='progress-bar-processing']/span[@class='progress-bar-text']/span[@class='progress-bar-percentage']")).Where(x => x.Displayed);
-        //            if (processingPercentageTexts.Count() > 0 && processingPercentageTexts.First().Text != "0%") break;
-        //            Thread.Sleep(config.Upload_Check_Interval);
-        //        }
-        //        while (true);
+                        var status = InsertEndScreen(driver);
+                        if (status)
+                        {
+                            insertedEndScreenVideoLinks.Add(chunk[k]);
+                            using (StreamWriter writer = new StreamWriter("Inserted_End_Screen_Video_Links.txt", true))
+                            {
+                                writer.WriteLine(chunk[k]);
+                            }
+                            numSuccess++;
+                        }
+                    }
+                    Thread.Sleep(config.Page_Load);
+                    for (var k = 0; k < chunk.Length; k++)
+                    {
+                        driver.SwitchTo().Window("tab_" + k);
+                        driver.Close();
+                    }
+                    driver.SwitchTo().Window(driver.WindowHandles.First());
+                }
+            }
+            catch (Exception ex)
+            {
+                using (StreamWriter writer = new StreamWriter("Errors.txt", true))
+                {
+                    writer.WriteLine(ex.ToString());
+                }
+            }
 
-        //        var completeButton = driver.FindElement(By.XPath("//*/button[@class='yt-uix-button yt-uix-button-size-default save-changes-button yt-uix-tooltip yt-uix-button-primary']"));
-        //        completeButton.Click();
-        //        Thread.Sleep(config.Page_Load);
+            if (driver != null)
+            {
+                driver.Close();
+                driver.Quit();
+            }
 
-        //        var videoFile = @"Videos\" + video.Id + ".mp4";
-        //        var videoCutFile = @"Videos\" + video.Id + "_cut.mp4";
-        //        var thumbnailFile = @"Videos\" + video.Id + ".jpg";
-        //        //if (File.Exists(videoFile))
-        //        //{
-        //        //    File.Delete(videoFile);
-        //        //}
+            return numSuccess;
+        }
 
-        //        //if (File.Exists(videoCutFile))
-        //        //{
-        //        //    File.Delete(videoCutFile);
-        //        //}
+        protected bool InsertEndScreen(ChromeDriver driver)
+        {
+            try
+            {
+                var endscreenElement = driver.FindElement(By.XPath("//*/div[@id='creator-editor-container']/div[@class='creator-editor-nav']/ul[@class='creator-editor-nav-tabs']/li[@id='endscreen-editor-tab']/a[@class='yt-uix-sessionlink']"));
+                endscreenElement.Click();
+                Thread.Sleep(config.Page_Load);
+                var copyTemplate = driver.FindElement(By.XPath("//*/div[@id='endscreen-editor-right-toolbar-buttons']/button[@class='yt-uix-button yt-uix-button-size-default yt-uix-button-default endscreen-editor-copy-from-template']/span[@class='yt-uix-button-content']"));
+                copyTemplate.Click();
+                Thread.Sleep(config.Inpage_Load);
+                IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                js.ExecuteScript(
+                "var headID = document.getElementsByTagName('head')[0];" +
+                "var newScript = document.createElement('script');" +
+                "newScript.type = 'text/javascript';" +
+                "newScript.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js';" +
+                "headID.appendChild(newScript);");
+                Thread.Sleep(config.Page_Load);
+                js.ExecuteScript("jQuery('.yt-dialog.preserve-players > .yt-dialog-base > .yt-dialog-fg > .yt-dialog-fg-content > .yt-dialog-content > .annotator-overlay-content.endscreen-import-template-overlay-content > .yt-video-picker-form > .yt-video-picker-modal > .yt-video-picker-videos-container > .yt-video-picker-scroll-container').animate({ scrollTop: 10000 }, 'fast');");
+                Thread.Sleep(config.Inpage_Load);
+                var template4VideosElement = driver.FindElements(By.XPath("//*/div[@class='yt-video-picker-scroll-container']/section[5]/ul[@class='yt-video-picker-grid yt-video-picker-videos clearfix']/li[@class='video-picker-item']/img")).First(x => x.Displayed);
+                Actions action = new Actions(driver);
+                action.DoubleClick(template4VideosElement).Perform();
+                Thread.Sleep(config.Page_Load);
+                
+                for (var i = 0; i < links.Count(); i++)
+                {
+                    var insertLinkElement = driver.FindElement(By.XPath("//*/div[@id='elements-list']/div[@class='annotator-list-item clearfix'][1]/div[@class='annotator-list-item-edit']/button[@class='yt-uix-button yt-uix-button-size-default yt-uix-button-default yt-uix-button-empty yt-uix-button-has-icon annotator-edit-button yt-uix-tooltip']/span[@class='yt-uix-button-icon-wrapper']/span[@class='yt-uix-button-icon yt-uix-button-icon-annotation-edit yt-sprite']"));
+                    Thread.Sleep(config.Inpage_Load);
+                    insertLinkElement.Click();
+                    var inputLinkElement = driver.FindElements(By.XPath("//*/input[@class='yt-uix-form-input-text yt-video-picker-url']")).First(x => x.Displayed);
+                    inputLinkElement.SendKeys(links[i]);
+                    inputLinkElement.SendKeys(Keys.Enter);
+                    Thread.Sleep(config.Page_Load);
+                }
+                var saveElement = driver.FindElement(By.XPath("//*/div[@id='creator-editor-container']/div[@class='creator-editor-content']/div[@class='annotator-default-content']/div[@class='creator-editor-header clearfix endscreen-editor']/button[@id='endscreen-editor-save']/span[@class='yt-uix-button-content']"));
+                saveElement.Click();
+                Thread.Sleep(config.Page_Load);
 
-        //        //if (File.Exists(thumbnailFile))
-        //        //{
-        //        //    File.Delete(thumbnailFile);
-        //        //}
+                return true;
+            }
+            catch (Exception ex)
+            {
+                using (StreamWriter writer = new StreamWriter("Errors.txt", true))
+                {
+                    writer.WriteLine(ex.ToString());
+                }
+            }
 
-        //        status = true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        using (StreamWriter writer = new StreamWriter("Errors.txt", true))
-        //        {
-        //            writer.WriteLine(ex.ToString());
-        //        }
-        //    }
+            return false;
+        }
 
-        //    if (driver != null)
-        //    {
-        //        driver.Close();
-        //        driver.Quit();
-        //    }
+        protected string GetVideoExtension(string videoId)
+        {
+            var extension = ".mp4";
+            try
+            {
+                DirectoryInfo dir = new DirectoryInfo("Videos");
+                var videoInfo = dir.GetFiles().First(x => x.Name.Contains(videoId + ".") && !x.Name.Contains(".jpg"));
+                extension = videoInfo.Extension;
+            }
+            catch (Exception ex)
+            {
+                using (StreamWriter writer = new StreamWriter("Errors.txt", true))
+                {
+                    writer.WriteLine(ex.ToString());
+                }
+            }
 
-        //    return status;
-        //}
+            return extension;
+        }
     }
 }

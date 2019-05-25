@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using YoutubeExplode.Models;
@@ -25,7 +26,8 @@ namespace BetterReup
         private void BtnStart_Click(object sender, RoutedEventArgs e)
         {
             btnStart.IsEnabled = false;
-            StartProgram();
+            var thread = new Thread(StartProgram);
+            thread.Start();
         }
 
         public async void StartProgram()
@@ -33,7 +35,11 @@ namespace BetterReup
             var helper = new VideoHelper();
 
             IReadOnlyList<Video> videos = null;
-            lblTotalVideos.Content = "Đang lấy thông tin các video";
+            this.Dispatcher.Invoke(() =>
+            {
+                lblDone.Content = "Đang chạy...";
+                lblTotalVideos.Content = "Đang lấy thông tin các video";
+            });
             switch (VideoHelper.config.Media_Type)
             {
                 case "Channel":
@@ -53,11 +59,17 @@ namespace BetterReup
                     videos = videosList;
                     break;
                 default:
-                    lblTotalVideos.Content = "Không thể lấy thông tin các videos. Vui lòng cấu hình Media_Type là một trong các loại: Channel, Playlist, Videos";
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        lblTotalVideos.Content = "Không thể lấy thông tin các videos. Vui lòng cấu hình Media_Type là một trong các loại: Channel, Playlist, Videos";
+                    });
                     return;
             }
 
-            lblTotalVideos.Content = $"Tổng số video: {videos.Count.ToString()}. Sẽ download từ video thứ {VideoHelper.config.Start} đến {VideoHelper.config.Start + VideoHelper.config.Num_Videos - 1}";
+            this.Dispatcher.Invoke(() =>
+            {
+                lblTotalVideos.Content = $"Tổng số video: {videos.Count.ToString()}. Sẽ download từ video thứ {VideoHelper.config.Start} đến {VideoHelper.config.Start + VideoHelper.config.Num_Videos - 1}";
+            });
 
             var numErrorDownloads = 0;
             var numErrorUploads = 0;
@@ -77,23 +89,32 @@ namespace BetterReup
 
                 for (var j = 0; j < chunks[i].Length; j++)
                 {
-                    lblDownloading.Content = $"Đang download: #{chunks[i][j] + 1} " + videos[chunks[i][j]].Title;
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        lblDownloading.Content = $"Đang download: #{chunks[i][j] + 1} " + videos[chunks[i][j]].Title;
+                    });
+
                     var downloadStatus = await helper.DownloadVideo(videos[chunks[i][j]]);
                     if (!downloadStatus)
                     {
-                        lblDownloaded.Content = $"Download lỗi #{chunks[i][j] + 1} " + videos[chunks[i][j]].Title;
                         numErrorDownloads++;
-                        lblErrorDownloads.Content = numErrorDownloads.ToString();
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            lblDownloaded.Content = $"Download lỗi #{chunks[i][j] + 1} " + videos[chunks[i][j]].Title;
+                            lblErrorDownloads.Content = numErrorDownloads.ToString();
+                        });
                         successDownloads.Add(chunks[i][j], false);
                         continue;
                     }
                     helper.CutVideo(videos[chunks[i][j]]);
-                    lblDownloading.Content = "...";
-                    lblDownloaded.Content = $"Đã download: #{chunks[i][j] + 1} " + videos[chunks[i][j]].Title;
                     numDownloads++;
                     successDownloads.Add(chunks[i][j], true);
-                    lblNumDownloads.Content = numDownloads.ToString();
-
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        lblDownloading.Content = "...";
+                        lblDownloaded.Content = $"Đã download: #{chunks[i][j] + 1} " + videos[chunks[i][j]].Title;
+                        lblNumDownloads.Content = numDownloads.ToString();
+                    });
                 }
 
                 var toUploadVideos = new List<Video>();
@@ -111,18 +132,46 @@ namespace BetterReup
                     uploadingContent.Append($"Đang upload: {toUploadVideo.Title}");
                     uploadingContent.Append(Environment.NewLine);
                 }
-                lblUploading.Content = uploadingContent;
+                this.Dispatcher.Invoke(() =>
+                {
+                    lblUploading.Content = uploadingContent;
+                });
                 var numUploadSuccess = helper.UploadVideos(toUploadVideos.ToArray());
-                lblUploaded.Content = $"Upload lỗi {toUploadVideos.Count() - numUploadSuccess} video";
+                this.Dispatcher.Invoke(() =>
+                {
+                    lblUploaded.Content = $"Upload lỗi {toUploadVideos.Count() - numUploadSuccess} video";
+                });
                 numErrorUploads += (toUploadVideos.Count() - numUploadSuccess);
-                lblErrorUploads.Content = numErrorUploads.ToString();
-                lblUploading.Content = "...";
-                lblUploaded.Content = $"Đã upload {numUploadSuccess} video";
                 numUploads += numUploadSuccess;
-                lblNumUploads.Content = numUploads.ToString();
+                this.Dispatcher.Invoke(() =>
+                {
+                    lblErrorUploads.Content = numErrorUploads.ToString();
+                    lblUploading.Content = "...";
+                    lblUploaded.Content = $"Đã upload {numUploadSuccess} video";
+                    lblNumUploads.Content = numUploads.ToString();
+                });
             }
 
-            lblDone.Content = "Hoàn thành!";
+            // Insert endscreen
+            helper.InsertEndScreens();
+            var totalNumInsertSuccess = VideoHelper.insertedEndScreenVideoLinks.Count;
+            do
+            {
+                var numInsertSuccess = helper.InsertEndScreens();
+                totalNumInsertSuccess += numInsertSuccess;
+                this.Dispatcher.Invoke(() =>
+                {
+                    lblNumInsertedEndScreen.Content = totalNumInsertSuccess.ToString();
+                });
+
+                if (VideoHelper.isAllInsertedEndScreen == true) break;
+            }
+            while (true);
+
+            this.Dispatcher.Invoke(() =>
+            {
+                lblDone.Content = "Hoàn thành!";
+            });
         }
 
         private void BtnHome_Click(object sender, RoutedEventArgs e)
