@@ -66,9 +66,10 @@ namespace BetterReup
                     return;
             }
 
+            var maxNumVideos = videos.Count() < VideoHelper.config.Num_Videos ? videos.Count() : VideoHelper.config.Num_Videos;
             this.Dispatcher.Invoke(() =>
             {
-                lblTotalVideos.Content = $"Tổng số video: {videos.Count.ToString()}. Sẽ download từ video thứ {VideoHelper.config.Start} đến {VideoHelper.config.Start + VideoHelper.config.Num_Videos - 1}";
+                lblTotalVideos.Content = $"Tổng số video: {videos.Count.ToString()}. Sẽ download từ video thứ {VideoHelper.config.Start} đến {VideoHelper.config.Start + maxNumVideos - 1}";
             });
 
             var numErrorDownloads = 0;
@@ -76,7 +77,7 @@ namespace BetterReup
             var numDownloads = 0;
             var numUploads = 0;
 
-            var ranges = Enumerable.Range(VideoHelper.config.Start - 1, VideoHelper.config.Num_Videos);
+            var ranges = Enumerable.Range(VideoHelper.config.Start - 1, maxNumVideos);
             int[][] chunks = ranges
                     .Select((s, i) => new { Value = s, Index = i })
                     .GroupBy(x => x.Index / VideoHelper.config.Concurrent)
