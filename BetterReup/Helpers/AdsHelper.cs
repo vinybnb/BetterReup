@@ -35,7 +35,7 @@ namespace BetterReup.Helpers
                     options.AddArguments("--headless");
                 }
                 driver = new ChromeDriver(options);
-                driver.Navigate().GoToUrl("https://www.youtube.com/my_videos?o=U&ar=2");
+                driver.Navigate().GoToUrl("https://www.youtube.com/my_videos?o=U&ar=3");
                 Thread.Sleep(config.Page_Load);
 
                 var totalVideosText = driver.FindElement(By.XPath("//*/div[@id='creator-subheader']/div[@class='creator-subheader-content']/span[@id='creator-subheader-item-count']"));
@@ -46,14 +46,14 @@ namespace BetterReup.Helpers
                 {
                     if (i != 1)
                     {
-                        driver.Navigate().GoToUrl("https://www.youtube.com/my_videos?o=U&ar=2&pi=" + i);
+                        driver.Navigate().GoToUrl("https://www.youtube.com/my_videos?o=U&ar=3&pi=" + i);
                         Thread.Sleep(config.Page_Load);
                     }
                     var editLinks = driver.FindElements(By.XPath("//*/div[@class='vm-video-info-container']/div[@class='vm-video-info'][2]/div[@class='vm-video-info vm-owner-bar']/span[@class='yt-uix-button-group']/a")).Where(x => x.Displayed).Select(x => x.GetAttribute("href")).ToList();
 
                     for (var j = 0; j < editLinks.Count(); j++)
                     {
-                        editLinks[j] = editLinks[j].Replace("ar=2&o=U", "o=U&ar=2");
+                        editLinks[j] = editLinks[j].Replace("ar=3&o=U", "o=U&ar=3");
                     }
                     var notSetLinks = editLinks.Except(adsVideoLinks).ToList();
                     if (notSetLinks.Count() >= config.Num_Videos_Once - toSetAdsEditLinks.Count())

@@ -24,6 +24,5 @@ namespace BetterReup.Helpers
         public string Video_Path { get; set; }
 
         public int Num_Videos_Inserted_End_Screen_Once { get; set; }
-        public int Num_Tabs_Inserted_End_Screen_Once { get; set; }
     }
 }
