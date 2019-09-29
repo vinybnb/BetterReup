@@ -37,7 +37,7 @@ namespace BetterReup
                 var response = myHttpWebRequest.GetResponse();
                 string todaysDates = response.Headers["date"];
 
-                var expiredTime = new DateTime(2019, 7, 30);
+                var expiredTime = new DateTime(2020, 1, 1);
                 var currentTime = DateTime.ParseExact(todaysDates,
                                        "ddd, dd MMM yyyy HH:mm:ss 'GMT'",
                                        CultureInfo.InvariantCulture.DateTimeFormat,

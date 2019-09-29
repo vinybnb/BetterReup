@@ -25,6 +25,7 @@ namespace BetterReup.Helpers
         public static readonly string[] links = File.ReadAllLines("Links.txt").Where(x => x.Trim() != string.Empty).ToArray();
         public static List<string> insertedEndScreenVideoLinks = File.ReadAllLines("Inserted_End_Screen_Links.txt").Where(x => x.Trim() != string.Empty).ToList();
         protected int CurrentTitleIndex { get; set; }
+        private char[] separators = new char[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' };
 
         public VideoHelper()
         {
@@ -39,13 +40,13 @@ namespace BetterReup.Helpers
                 var streamInfoSet = await GetVideoMediaStreamInfosAsync(video.Id);
                 var streamInfo = streamInfoSet.Muxed.WithHighestVideoQuality();
                 var ext = streamInfo.Container.GetFileExtension();
-                await DownloadMediaStreamAsync(streamInfo, $@"{videoFolder}\{video.Id}.{ext}");
+                await DownloadMediaStreamAsync(streamInfo, videoFolder == "Videos" ? $@"{videoFolder}\{video.Id}.{ext}" : $@"{videoFolder}\{String.Join(" ", video.Title.Split(separators, StringSplitOptions.RemoveEmptyEntries)).Trim()}.{ext}");
 
                 //await Converter.DownloadVideoAsync(video.Id, $@"Videos\{video.Id}.mp4");
-                var thumbnailUri = new Uri(video.Thumbnails.HighResUrl);
+                var thumbnailUri = new Uri(video.Thumbnails.MediumResUrl);
                 using (System.Net.WebClient client = new System.Net.WebClient())
                 {
-                    var thumbPath = config.Video_Path + video.Id + ".jpg";
+                    var thumbPath = videoFolder == "Videos" ? $@"{videoFolder}\{video.Id}.jpg" : $@"{videoFolder}\{String.Join(" ", video.Title.Split(separators, StringSplitOptions.RemoveEmptyEntries)).Trim()}.jpg";
                     client.DownloadFile(thumbnailUri, thumbPath);
                 }
 

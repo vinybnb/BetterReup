@@ -38,6 +38,7 @@ namespace BetterReup
 
             IReadOnlyList<Video> videos = null;
             lblTotalVideos.Content = "Đang lấy thông tin các video";
+            var numVideos = VideoHelper.config.Num_Videos;
             switch (VideoHelper.config.Media_Type)
             {
                 case "Channel":
@@ -61,12 +62,14 @@ namespace BetterReup
                     return;
             }
 
-            lblTotalVideos.Content = $"Tổng số video: {videos.Count.ToString()}. Sẽ download từ video thứ {VideoHelper.config.Start} đến {VideoHelper.config.Start + VideoHelper.config.Num_Videos - 1}";
+            if (videos.Count() < numVideos) numVideos = videos.Count();
+
+            lblTotalVideos.Content = $"Tổng số video: {videos.Count.ToString()}. Sẽ download từ video thứ {VideoHelper.config.Start} đến {VideoHelper.config.Start + numVideos - 1}";
 
             var numErrorDownloads = 0;
             var numDownloads = 0;
 
-            var ranges = Enumerable.Range(VideoHelper.config.Start - 1, VideoHelper.config.Num_Videos);
+            var ranges = Enumerable.Range(VideoHelper.config.Start - 1, numVideos);
             int[][] chunks = ranges
                     .Select((s, i) => new { Value = s, Index = i })
                     .GroupBy(x => x.Index / VideoHelper.config.Concurrent)
