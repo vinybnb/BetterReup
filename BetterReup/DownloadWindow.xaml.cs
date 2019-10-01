@@ -52,8 +52,12 @@ namespace BetterReup
                     var videosList = new List<Video>();
                     foreach (var videoId in VideoHelper.videoIds)
                     {
-                        var video = await helper.GetVideoAsync(videoId);
-                        videosList.Add(video);
+                        try
+                        {
+                            var video = await helper.GetVideoAsync(videoId);
+                            videosList.Add(video);
+                        }
+                        catch (Exception) { }
                     }
                     videos = videosList;
                     break;
